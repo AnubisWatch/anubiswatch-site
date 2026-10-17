@@ -114,8 +114,10 @@ clipboard paths, in-page anchors, mobile navigation and accessibility.
 
 ## Themes and studio
 
-The header theme control switches between the original dark palette and a light
-papyrus palette with contrasting gold and green accents, including documentation
+The header Appearance menu has Light, Dark and System preview cards, like the
+theme picker on cobaltdb.dev. System follows device changes; explicit choices
+select the original dark palette or a light papyrus palette with contrasting gold
+and green accents, including documentation
 and syntax highlighting. A pre-paint script applies the saved preference or device
 theme; choices persist locally and synchronize across tabs. Storage failures do
 not prevent switching within the current session.
