@@ -124,7 +124,7 @@ h2 em { font-size: 1.13em; line-height: .98; }
 .window-sample { font-size: 7px; letter-spacing: .12em; }
 .dashboard-body { display: flex; }
 .dashboard-sidebar { width: 68px; padding: 20px 12px; display: flex; align-items: center; flex-direction: column; gap: 26px; color: var(--dim); border-right: 1px solid var(--line); flex-shrink: 0; }
-.dashboard-sidebar img { }
+.dashboard-sidebar img { object-fit: contain; }
 .dashboard-sidebar > svg:first-of-type { color: var(--gold); }
 .sidebar-line { width: 23px; height: 1px; background: var(--line); }
 .sidebar-spacer { flex: 1; }
