@@ -7,7 +7,7 @@ test("page renders without runtime errors, stays within the viewport and is acce
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("The JudgmentNever Sleeps.");
-  await expect(page.getByRole("link", { name: "Summon your guardian" })).toHaveAttribute("href", "#get-started");
+  await expect(page.getByRole("link", { name: "Summon your guardian", exact: true })).toHaveAttribute("href", "#get-started");
   for (const width of testInfo.project.name === "desktop" ? [3840, 2560, 1920, 1440, 1024, 768] : [412, 390, 320]) {
     await page.setViewportSize({ width, height: width >= 3840 ? 2160 : 1000 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);

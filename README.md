@@ -92,3 +92,22 @@ Official reference: [GitHub custom-domain documentation](https://docs.github.com
   of shrinking into unreadable labels.
 - The Ma’at passage links to the Metropolitan Museum’s explanation of the
   weighing of the heart. It is a metaphor, not a technical product claim.
+
+## Embedded documentation
+
+The website exports 17 documentation pages under /docs/, with local search,
+grouped navigation, a page table of contents, syntax highlighting, code copying,
+previous/next links, mobile navigation and per-page canonical metadata.
+All documentation pages are in the sitemap.
+
+Content lives in content/docs/. source.json pins its upstream reference commit,
+and LICENSE.txt retains the AnubisWatch documentation license. Curated guides
+correct known drift in archive downloads, initialization ports and MCP examples;
+reference pages preserve the project material with website presentation changes.
+See content/docs/README.md before updating the source snapshot.
+
+The search index is generated before build and dev, then fetched only when
+search opens. Shiki runs at build time; its highlighter is not shipped to the
+browser. Every reference page works from the static export without GitHub APIs.
+Browser tests check page exports, search failure/retry, keyboard navigation,
+clipboard paths, in-page anchors, mobile navigation and accessibility.

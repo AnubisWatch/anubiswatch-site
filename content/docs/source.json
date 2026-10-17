@@ -1,0 +1,10 @@
+{
+  "repository": "AnubisWatch/AnubisWatch",
+  "commit": "da590078710fa7c75b8587201d091edde6bff75d",
+  "capturedDate": "2026-10-17",
+  "notes": [
+    "Reference pages are adapted from upstream Markdown; introductory pages are curated against the README and current implementation.",
+    "Deployment download instructions use published archives instead of an obsolete raw-binary URL.",
+    "MCP endpoints and tool names are taken from internal/api/rest.go and internal/api/mcp.go."
+  ]
+}

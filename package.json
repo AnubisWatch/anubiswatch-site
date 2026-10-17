@@ -7,26 +7,39 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "preview": "serve out -l 3000"
+    "preview": "serve out -l 3000",
+    "prebuild": "node scripts/build-docs-index.mjs",
+    "predev": "node scripts/build-docs-index.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "latest",
+    "@fontsource/cormorant-garamond": "latest",
+    "@fontsource/ibm-plex-mono": "latest",
+    "hast-util-to-string": "^3.0.1",
+    "lucide-react": "1.59.0",
+    "motion": "14.3.0",
     "next": "16.4.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "motion": "14.3.0",
-    "lucide-react": "1.59.0",
-    "@fontsource-variable/manrope": "latest",
-    "@fontsource/cormorant-garamond": "latest",
-    "@fontsource/ibm-plex-mono": "latest"
+    "react-markdown": "^10.1.0",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "shiki": "^4.5.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0"
   },
-  "overrides": { "compression": "^1.8.2" },
+  "overrides": {
+    "compression": "^1.8.2"
+  },
   "devDependencies": {
-    "typescript": "latest",
+    "@axe-core/playwright": "latest",
+    "@playwright/test": "latest",
+    "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "@types/node": "latest",
-    "@playwright/test": "latest",
-    "@axe-core/playwright": "latest",
-    "serve": "latest"
+    "serve": "latest",
+    "typescript": "latest"
   }
 }

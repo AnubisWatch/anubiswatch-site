@@ -7,3 +7,4 @@ playwright-report/
 .env*
 .DS_Store
 artifacts/
+public/docs-search.json

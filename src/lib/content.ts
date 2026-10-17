@@ -1,5 +1,5 @@
 export const REPO = "https://github.com/AnubisWatch/AnubisWatch";
-export const DOCS = `${REPO}/blob/main/docs`;
+export const DOCS = "/docs";
 export const RELEASES = `${REPO}/releases/latest`;
 
 export const protocols = [
