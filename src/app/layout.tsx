@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: { type: "website", url: "https://anubis.watch", siteName: "AnubisWatch", title: "AnubisWatch — The Judgment Never Sleeps", description: "Your infrastructure has a guardian. Self-hosted monitoring. One Go binary. Ten protocols.", images: [{ url: "/images/anubis-presentation.png", width: 1376, height: 768, alt: "AnubisWatch monitoring platform overview" }] },
   twitter: { card: "summary_large_image", title: "AnubisWatch — The Judgment Never Sleeps", images: ["/images/anubis-presentation.png"] },
-  icons: { icon: "/icon.svg", apple: "/images/anubis-logo.png" },
+  icons: { icon: { url: "/images/anubis-logo.svg", type: "image/svg+xml" }, apple: "/images/anubis-logo.png" },
 };
 
 export const viewport: Viewport = { themeColor: "#0b0d0c", colorScheme: "dark" };

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" fill="none">
+  <title>AnubisWatch</title>
+  <desc>A faceted gold jackal with a green heartbeat, redrawn as vector paths from the original AnubisWatch logo.</desc>
+  <defs>
+    <linearGradient id="ear" x1="166" y1="68" x2="197" y2="148" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f5d26c"/><stop offset=".5" stop-color="#d8ac49"/><stop offset="1" stop-color="#a5772b"/>
+    </linearGradient>
+    <linearGradient id="head" x1="112" y1="145" x2="182" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#efcc69"/><stop offset=".52" stop-color="#e3bd56"/><stop offset="1" stop-color="#f1ce73"/>
+    </linearGradient>
+    <linearGradient id="muzzle" x1="99" y1="197" x2="148" y2="241" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c99d3d"/><stop offset=".5" stop-color="#d6af51"/><stop offset="1" stop-color="#a87b2b"/>
+    </linearGradient>
+    <linearGradient id="crown" x1="213" y1="58" x2="230" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#b78b35"/><stop offset=".44" stop-color="#e9c562"/><stop offset="1" stop-color="#f1d276"/>
+    </linearGradient>
+    <linearGradient id="mane" x1="253" y1="167" x2="311" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#edc962"/><stop offset=".53" stop-color="#b68a30"/><stop offset="1" stop-color="#d1a74a"/>
+    </linearGradient>
+    <linearGradient id="chest" x1="174" y1="278" x2="216" y2="342" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e9c465"/><stop offset=".35" stop-color="#d3ad51"/><stop offset="1" stop-color="#a4772d"/>
+    </linearGradient>
+    <linearGradient id="pulse" x1="155" y1="248" x2="339" y2="277" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#39ae65"/><stop offset="1" stop-color="#27b85b"/>
+    </linearGradient>
+    <clipPath id="head-outline">
+      <path clip-rule="evenodd" d="M205 54 257 143 246 160 194 232 89 231 76 220 85 204 77 204 70 214 62 204 127 181 139 163 146 157 204 142Z M213 84 213 144 232 161 238 140Z M153 173 184 166 171 182 141 187Z"/>
+    </clipPath>
+  </defs>
+  <!-- Rear ear -->
+  <path d="M170 65 196 113 196 136 170 144Z" fill="url(#ear)"/>
+  <!-- Head and front ear; the inner ear and eye remain transparent -->
+  <g clip-path="url(#head-outline)">
+    <path d="M60 50H260V235H60Z" fill="url(#muzzle)"/>
+    <!-- Upper face and the large illuminated cheek -->
+    <path d="M62 204 127 181 139 163 146 157 204 142 213 144 232 161 177 215 76 220 85 204Z" fill="url(#head)"/>
+    <path d="M62 204 127 181 142 180 85 204 76 220Z" fill="url(#ear)"/>
+    <!-- Front ear and its distinct diagonal forehead plane -->
+    <path d="M205 54 257 143 232 161 213 144 204 142Z" fill="url(#crown)"/>
+    <path d="M205 54 213 84 213 144 204 142Z" fill="#d5aa51"/>
+    <path d="M232 161 257 143 194 232 177 215Z" fill="url(#muzzle)"/>
+  </g>
+  <!-- Neck: separated gold planes -->
+  <path d="M260 153 314 258 268 258 249 172Z" fill="url(#mane)"/>
+  <path d="M260 153 314 258 287 250 273 201Z" fill="#e4bb56" fill-opacity=".5"/>
+  <path d="M247 171 235 246 223 212 207 258 196 258 199 237Z" fill="url(#crown)"/>
+  <path d="M167 240H190L187 258H161Z" fill="url(#muzzle)"/>
+  <!-- Two chest planes split by the original negative-space seam -->
+  <path d="M154 277H183L170 337 147 298Z" fill="url(#chest)"/>
+  <path d="M191 277H220L229 310 176 345Z" fill="url(#chest)"/>
+  <path d="M154 277H183L179 294 147 298Z" fill="#edc765" fill-opacity=".22"/>
+  <!-- Filled outline preserves the narrow, sharp pulse peaks without stroke miter clipping -->
+  <path d="M250 197 268 283 274 264H339V271H280L267 312 250 237 235 309 222 258 217 271H155L158 264H211L222 232 235 275Z" fill="url(#pulse)"/>
+</svg>

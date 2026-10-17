@@ -27,7 +27,7 @@ function Label({ children, number }: { children: ReactNode; number?: string }) {
 }
 
 function Brand({ compact = false }: { compact?: boolean }) {
-  return <a className="brand" href="#top" aria-label="AnubisWatch home"><img src="/images/anubis-logo.png" width="44" height="44" alt="" /><span>Anubis<span className="brand-light">Watch</span></span>{!compact && <span className="brand-separator" />}</a>;
+  return <a className="brand" href="#top" aria-label="AnubisWatch home"><img src="/images/anubis-logo.svg" width="44" height="44" alt="" /><span>Anubis<span className="brand-light">Watch</span></span>{!compact && <span className="brand-separator" />}</a>;
 }
 
 function CopyButton({ value, label = "Copy command" }: { value: string; label?: string }) {
@@ -71,7 +71,7 @@ function Guardian() {
     <span className="guardian-coordinate coordinate-top">ANUBIS / THE GUARDIAN</span>
     <span className="guardian-coordinate coordinate-left">30° N</span>
     <span className="guardian-coordinate coordinate-right">31° E</span>
-    <img className="guardian-logo" src="/images/anubis-logo.png" width="400" height="400" alt="" fetchPriority="high" />
+    <img className="guardian-logo" src="/images/anubis-logo.svg" width="400" height="400" alt="" fetchPriority="high" />
     <svg className="guardian-pulse" viewBox="0 0 600 90" fill="none"><path d="M0 46H163L178 46L190 30L200 63L214 10L229 80L246 27L258 46H600" stroke="currentColor" strokeWidth="1.5" /><path className="pulse-trace" d="M0 46H163L178 46L190 30L200 63L214 10L229 80L246 27L258 46H600" stroke="currentColor" strokeWidth="3" /></svg>
     <div className="guardian-caption"><span className="status-dot" />EVER VIGILANT<span className="caption-line" />EST. 2026</div>
     <span className="guardian-star star-one">✦</span><span className="guardian-star star-two">✧</span>
@@ -84,7 +84,7 @@ function Dashboard() {
   return <div className="dashboard-frame">
     <div className="window-bar"><div className="window-dots"><i /><i /><i /></div><span><ShieldCheck size={11} /> localhost:8443</span><span className="window-sample">INTERACTIVE PREVIEW</span></div>
     <div className="dashboard-body">
-      <aside className="dashboard-sidebar"><img src="/images/anubis-logo.png" width="40" height="40" alt="" /><span className="sidebar-line" /><Activity size={18} /><Layers3 size={18} /><Bell size={18} /><Network size={18} /><span className="sidebar-spacer" /><ShieldCheck size={18} /></aside>
+      <aside className="dashboard-sidebar"><img src="/images/anubis-logo.svg" width="40" height="40" alt="" /><span className="sidebar-line" /><Activity size={18} /><Layers3 size={18} /><Bell size={18} /><Network size={18} /><span className="sidebar-spacer" /><ShieldCheck size={18} /></aside>
       <div className="dashboard-main">
         <div className="dashboard-top"><div><span className="mono dim">HALL OF MA’AT</span><h3>Your services, in balance.</h3></div><span className={"health-pill " + (incident ? "warning" : "")}><span className="status-dot" />{incident ? "Attention required" : "All systems operational"}</span></div>
         <Tabs id="dashboard" label="Dashboard preview" active={tab} onChange={setTab} items={[{ id: "overview", label: "Overview" }, { id: "souls", label: "Souls" }, { id: "incidents", label: "Incidents" }]} />

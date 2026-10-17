@@ -72,7 +72,10 @@ Official reference: [GitHub custom-domain documentation](https://docs.github.com
   supplied introduction card. Update `src/lib/content.ts` when capabilities change.
 - Dashboard telemetry and incident simulation are explicitly illustrative.
 - Original logo and presentation card were supplied by the project owner.
-  The hero uses the original logo rather than replacing the project identity.
+  `public/images/anubis-logo.svg` reconstructs the logo as editable vector paths
+  and gold gradients, with a transparent background and no embedded raster.
+  The header, hero, dashboard preview, footer and favicon use this SVG.
+  The original PNG is retained as a reference and Apple touch icon.
 - All typography is bundled locally; continuous decorative motion respects
   `prefers-reduced-motion`, with keyboard support for all tabs.
 - The Ma’at passage links to the Metropolitan Museum’s explanation of the
