@@ -1,5 +1,5 @@
 .docs-site { min-height: 100svh; }
-.docs-container { width: min(88rem, calc(100% - 4rem)); margin: auto; }
+.docs-container { margin: auto; }
 .docs-header { position: fixed; inset: 0 0 auto; z-index: 40; background: oklch(0.155 0.008 155 / .96); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
 .docs-header-inner { min-height: 5.5rem; display: flex; align-items: center; gap: 1.8rem; }
 .docs-header-label { display: flex; align-items: center; gap: .65rem; font: .7rem var(--mono); letter-spacing: .09em; color: var(--gold); padding-left: 1.5rem; border-left: 1px solid var(--line); }
@@ -20,7 +20,7 @@ kbd { font: .7rem var(--mono); color: var(--dim); border: 1px solid var(--line);
 .docs-sidebar-footnote { display: block; margin-top: 2rem; font: .6rem var(--mono); color: var(--dim); letter-spacing: .07em; }
 .docs-reading { min-width: 0; scroll-margin-top: 7rem; }
 .docs-article-layout { display: grid; grid-template-columns: minmax(0, 1fr) 11rem; gap: 3rem; align-items: start; }
-.docs-article { min-width: 0; max-width: 48rem; padding-bottom: 3rem; }
+.docs-article { min-width: 0; padding-bottom: 3rem; }
 .docs-breadcrumb { display: flex; flex-wrap: wrap; gap: .7rem; color: var(--dim); font-size: .8rem; margin-bottom: 2.2rem; }
 .docs-breadcrumb a:hover { color: var(--gold); }
 .docs-article-header { margin-bottom: 2.5rem; border-bottom: 1px solid var(--line); padding-bottom: 2.5rem; }
@@ -36,7 +36,7 @@ kbd { font: .7rem var(--mono); color: var(--dim); border: 1px solid var(--line);
 .docs-start-cards strong { font-size: 1rem; font-weight: 600; }
 .docs-start-cards span { color: var(--muted); font-size: .85rem; }
 .docs-start-cards svg:last-child { align-self: end; }
-.docs-prose { font-size: 1rem; line-height: 1.95; overflow-wrap: anywhere; max-width: 74ch; }
+.docs-prose { font-size: 1rem; line-height: 1.95; overflow-wrap: anywhere; }
 .docs-prose > p, .docs-prose > ul, .docs-prose > ol { margin: 1.2rem 0; }
 .docs-prose p { color: var(--muted); }
 .docs-prose strong { color: var(--text); font-weight: 650; }
@@ -112,7 +112,7 @@ kbd { font: .7rem var(--mono); color: var(--dim); border: 1px solid var(--line);
   .docs-header-label { display: none; }
 }
 @media (max-width: 900px) {
-  .docs-container { width: calc(100% - 2.5rem); }
+
   .docs-workspace { grid-template-columns: 1fr; padding-top: 9rem; }
   .docs-sidebar { display: none; }
   .docs-header-inner { min-height: 4.5rem; gap: .75rem; }

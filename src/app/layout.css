@@ -1,0 +1,94 @@
+/* One geometry system for the marketing site and documentation. Physical caps
+   keep container width independent from the accessible rem typography scale. */
+:root {
+  --layout-max: 1728px;
+  --layout-gutter: clamp(20px, 3.333333vw, 64px);
+  --layout-width: min(var(--layout-max), calc(100% - 2 * var(--layout-gutter)));
+  --layout-gap: clamp(20px, 2vw, 40px);
+  --section-space: clamp(64px, 5vw, 112px);
+  --card-space: clamp(24px, 2vw, 36px);
+  --prose-measure: min(68ch, 760px);
+}
+html { font-size: clamp(16px, calc(10px + .416667vw), 22px); }
+.site :is(.section-shell, .header-inner), .docs-site .docs-container {
+  width: var(--layout-width);
+  max-width: var(--layout-max);
+  margin-inline: auto;
+  min-width: 0;
+}
+.site :is(.hero-copy, .feature-card, .protocol-detail, .install-copy, .install-terminal, .faq-heading, .faq-list) { min-width: 0; }
+.hero-description, .section-heading > p, .feature-card p, .workflow-detail p,
+.myth-copy > p, .install-copy > p, .faq-list details > p, .oxog-copy > p { max-width: var(--prose-measure); }
+.site .hero { gap: var(--layout-gap); }
+.site .guardian { margin-inline: auto; }
+.site :is(.platform, .features, .protocols-section) { padding-top: var(--section-space); }
+.site :is(.workflow-section, .documentation-hub, .myth-section, .install-section, .faq-section) { padding-block: var(--section-space); }
+.site .closing { padding-block: var(--section-space); }
+.site :is(.feature-grid, .documentation-cards) { gap: var(--layout-gap); }
+.site .feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.site .feature-card { padding: var(--card-space); }
+.site .feature-cluster { grid-column: 1 / 3; grid-row: 1; container: cluster-card / inline-size; }
+.site .feature-journey { grid-column: 3; grid-row: 1; }
+.site .feature-alerts { grid-column: 1; grid-row: 2; }
+.site .feature-storage { grid-column: 2; grid-row: 2; }
+.site .feature-api { grid-column: 3; grid-row: 2; }
+.site .api-card-copy { flex-direction: column; gap: 1.25rem; }
+.site :is(.workflow-detail, .myth-section, .install-section, .faq-section) { column-gap: var(--layout-gap); }
+.site .section-heading { gap: var(--layout-gap); margin-bottom: var(--layout-gap); }
+.site .documentation-cards p { max-width: 44ch; }
+.docs-site .docs-workspace { column-gap: var(--layout-gap); grid-template-columns: minmax(200px, 14rem) minmax(0, 1fr); }
+.docs-site .docs-article-layout { column-gap: var(--layout-gap); grid-template-columns: minmax(0, 1fr) 11rem; }
+.docs-site .docs-article { max-width: none; }
+.docs-site .docs-prose { max-width: none; }
+.docs-prose > :is(p, ul, ol, blockquote), .docs-site .docs-article-header > p { max-width: var(--prose-measure); }
+.docs-site .docs-mobile-bar { padding-inline: var(--layout-gutter); }
+@media (min-width: 901px) {
+  .site .footer-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: var(--layout-gap); padding-block: calc(var(--section-space) / 2); }
+  .site .footer-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--layout-gap); }
+  .site .guardian { width: min(100%, 38rem); max-width: none; }
+}
+@media (min-width: 1600px) {
+  .site .feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .site .feature-cluster { grid-column: 1 / 3; grid-row: 1; }
+  .site .feature-journey { grid-column: 3 / 5; grid-row: 1; }
+  .site .feature-alerts { grid-column: 1; grid-row: 2; }
+  .site .feature-storage { grid-column: 2; grid-row: 2; }
+  .site .feature-api { grid-column: 3 / 5; grid-row: 2; }
+  .site .protocol-explorer { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+  .site .protocol-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .site .protocol-picker button { padding: 1rem .75rem; gap: .55rem; font-size: .875rem; }
+  .site .protocol-picker button > svg:last-child { display: none; }
+  .site .journey-path { max-width: 36rem; }
+  .oxog-studio { grid-template-columns: 8rem minmax(0, 1fr) 28rem; gap: var(--layout-gap); padding: var(--card-space); }
+  .oxog-projects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1300px) {
+  .docs-site .docs-article-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 960px) {
+  .site .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .site :is(.feature-cluster, .feature-journey, .feature-alerts, .feature-storage) { grid-column: auto; grid-row: auto; }
+  .site .feature-api { grid-column: 1 / -1; grid-row: auto; }
+}
+@media (max-width: 900px) {
+  .docs-site .docs-workspace { grid-template-columns: minmax(0, 1fr); }
+  .site .documentation-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .documentation-cards > a:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 700px) {
+  .site .hero { gap: 0; }
+  .site :is(.feature-grid, .documentation-cards) { grid-template-columns: minmax(0, 1fr); }
+  .site .feature-api { grid-column: auto; }
+  .site .documentation-cards > a:last-child { grid-column: auto; }
+}
+/* Narrow diagrams change arrangement instead of shrinking the node labels. */
+@container cluster-card (max-width: 360px) {
+  .cluster-visual { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem .6rem; aspect-ratio: auto; padding-block: 1rem; margin: 1.5rem auto; }
+  .cluster-visual :is(.cluster-globe, .cluster-links) { display: none; }
+  .cluster-visual .cluster-node { position: static; transform: none; min-width: 0; }
+  .cluster-visual .cluster-node strong { font-size: .75rem; white-space: nowrap; }
+  .cluster-visual .cluster-node small { font-size: .6875rem; white-space: nowrap; }
+  .cluster-visual .node-core { width: 3rem; height: 3rem; }
+  .cluster-visual .cluster-center { position: static; transform: none; grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+  .cluster-visual .cluster-node-detail { position: static; grid-column: 1 / -1; flex-wrap: wrap; gap: .4rem; }
+}

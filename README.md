@@ -85,11 +85,14 @@ Official reference: [GitHub custom-domain documentation](https://docs.github.com
   The Motion control pauses animations and stores the visitor's preference.
   Offscreen scenes and hidden tabs pause automatically through IntersectionObserver
   and the Page Visibility API. Device reduced-motion settings take precedence.
-- Typography and layout use rem units with a fluid 16–30px root size. At 4K,
-  the main content spans 2325px, body copy is around 32–34px, and navigation
-  around 28px. Desktop tests include 1920, 2560 and 3840px widths with explicit
-  readability checks. Mobile dashboard rows and workflow steps reflow instead
-  of shrinking into unreadable labels.
+- Shared geometry in src/app/layout.css aligns the header, sections and footer.
+  Containers use fluid 20–64px gutters and a 1728px cap independent of typography:
+  1344px of content at 1440px, and 1728px at 1920px and above. The root type scale
+  is 16–22px; paragraphs stay within 68ch and 760px while tables and panels use
+  the wider reading area. Desktop cards use four columns, tablet cards two and
+  mobile cards one. Layout checks cover 375, 768, 1024, 1440, 1920 and 2560px in
+  both themes, including alignment, usable width and visible-element overflow.
+  Mobile dashboard rows and workflow steps reflow into readable arrangements.
 - The Ma’at passage links to the Metropolitan Museum’s explanation of the
   weighing of the heart. It is a metaphor, not a technical product claim.
 

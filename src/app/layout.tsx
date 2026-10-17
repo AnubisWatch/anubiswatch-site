@@ -6,6 +6,7 @@ import "./globals.css";
 import "./svg-motion.css";
 import "./readability.css";
 import "./themes.css";
+import "./layout.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {

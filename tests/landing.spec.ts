@@ -23,12 +23,13 @@ test("page renders without runtime errors, stays within the viewport and is acce
           contentWidth: document.querySelector(".hero")!.getBoundingClientRect().width,
         };
       });
-      expect(readability.hero).toBeGreaterThanOrEqual(30);
-      expect(readability.card).toBeGreaterThanOrEqual(28);
-      expect(readability.navigation).toBeGreaterThanOrEqual(24);
-      expect(readability.services).toBeGreaterThanOrEqual(24);
-      expect(readability.title).toBeGreaterThanOrEqual(140);
-      expect(readability.contentWidth).toBeGreaterThanOrEqual(2200);
+      expect(readability.hero).toBeGreaterThanOrEqual(24);
+      expect(readability.card).toBeGreaterThanOrEqual(22);
+      expect(readability.navigation).toBeGreaterThanOrEqual(20);
+      expect(readability.services).toBeGreaterThanOrEqual(19);
+      expect(readability.title).toBeGreaterThanOrEqual(100);
+      expect(readability.contentWidth).toBeGreaterThanOrEqual(1680);
+      expect(readability.contentWidth).toBeLessThanOrEqual(1750);
       await page.screenshot({ path: "artifacts/desktop-4k-hero.png" });
       await page.locator("#platform").screenshot({ path: "artifacts/desktop-4k-dashboard.png" });
     }

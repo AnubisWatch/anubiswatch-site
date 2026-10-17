@@ -39,10 +39,11 @@ test("homepage links to embedded documentation and every page exports with worki
     await page.setViewportSize({ width, height: 1000 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     if (width === 3840) {
-      const sizes = await page.evaluate(() => [".docs-prose", ".docs-code pre", ".docs-sidebar a"].map((selector) => parseFloat(getComputedStyle(document.querySelector(selector)!).fontSize)));
-      expect(sizes[0]).toBeGreaterThanOrEqual(30);
-      expect(sizes[1]).toBeGreaterThanOrEqual(26);
-      expect(sizes[2]).toBeGreaterThanOrEqual(24);
+      await expect.poll(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize))).toBe(22);
+      const sizes = await page.evaluate(() => [".docs-prose", ".docs-code pre", ".docs-nav-group a"].map((selector) => parseFloat(getComputedStyle(document.querySelector(selector)!).fontSize)));
+      expect(sizes[0]).toBeGreaterThanOrEqual(22);
+      expect(sizes[1]).toBeGreaterThanOrEqual(19);
+      expect(sizes[2]).toBeGreaterThanOrEqual(19);
       await page.screenshot({ path: "artifacts/docs-4k.png" });
     }
   }

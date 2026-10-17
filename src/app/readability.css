@@ -1,9 +1,6 @@
-/* Fluid type and rem-based layout scale together, without CSS zoom or transforms.
-   1440px: ~16.6px root; 1920px: ~19.5px; 2560px: ~23.4px; 4K: 30px.
-   SVG transform origins remain in their own viewBox coordinates. */
-html { font-size: clamp(16px, calc(8px + .6vw), 30px); }
+/* Readable component typography; shared scale and geometry live in layout.css. */
 body { font-size: 1rem; }
-.section-shell { max-width: 77.5rem; }
+
 .brand { font-size: 1.5rem; }
 .desktop-nav a, .header-github { font-size: .9375rem; }
 .button { font-size: 1rem; }
@@ -109,8 +106,8 @@ body { font-size: 1rem; }
 @media (max-width: 700px) {
   .documentation-cards { grid-template-columns: 1fr; }
   .documentation-hub { padding: 4rem 0; }
-  .section-shell { width: calc(100% - 2.5rem); }
-  .header-inner { width: calc(100% - 2rem); gap: .625rem; }
+
+  .header-inner { gap: .625rem; }
   .brand { font-size: 1.25rem; }
   .hero { padding-top: 7.25rem; }
   .hero-badge { font-size: .75rem; }
