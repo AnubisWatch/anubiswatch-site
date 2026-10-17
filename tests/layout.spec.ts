@@ -9,6 +9,7 @@ test("shared containers align, wide grids use space and prose stays readable", a
   await page.emulateMedia({ colorScheme: "dark" });
   for (const route of ["/", "/docs/configuration/"]) {
     await page.goto(route);
+    await page.evaluate(() => document.fonts.ready);
     for (const theme of ["dark", "light"]) {
       if (theme === "light") {
         await page.getByRole("button", { name: /Color theme:/ }).click();
@@ -17,6 +18,8 @@ test("shared containers align, wide grids use space and prose stays readable", a
       }
       for (const width of widths) {
         await page.setViewportSize({ width, height: width >= 1920 ? 1080 : 900 });
+        // Measure a painted layout, after viewport-dependent font units settle.
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
         const result = await page.evaluate((isDocs) => {
           const selectors = isDocs ? [".docs-header-inner", ".docs-workspace", ".docs-studio-wrap", ".docs-footer"] : [".header-inner", ".hero", ".platform", ".features", ".site-footer"];
           const bounds = selectors.map((selector) => {
