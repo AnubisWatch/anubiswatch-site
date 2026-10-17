@@ -111,3 +111,17 @@ search opens. Shiki runs at build time; its highlighter is not shipped to the
 browser. Every reference page works from the static export without GitHub APIs.
 Browser tests check page exports, search failure/retry, keyboard navigation,
 clipboard paths, in-page anchors, mobile navigation and accessibility.
+
+## Themes and studio
+
+The header theme control switches between the original dark palette and a light
+papyrus palette with contrasting gold and green accents, including documentation
+and syntax highlighting. A pre-paint script applies the saved preference or device
+theme; choices persist locally and synchronize across tabs. Storage failures do
+not prevent switching within the current session.
+
+The OXOGNET studio section appears below the site and documentation, with a native
+SVG signature animation and the four project links shown on ninedeploy.com.
+Its animation follows reduced-motion and the homepage motion control.
+Theme tests cover both palettes, accessibility, responsive header controls,
+cross-tab preference updates and unavailable browser storage.

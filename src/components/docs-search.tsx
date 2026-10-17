@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, LoaderCircle, Search, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+
 
 type SearchEntry = { slug: string; title: string; headings: string; text: string; href: string };
 
 export function DocsSearch() {
-  const router = useRouter();
+
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<SearchEntry[]>([]);
@@ -68,7 +68,7 @@ export function DocsSearch() {
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
     .slice(0, 8);
 
-  function navigate(href: string) { setOpen(false); router.push(href); }
+  function navigate(href: string) { setOpen(false); window.location.assign(href); }
   return <>
     <button className="docs-search-trigger" onClick={() => setOpen(true)} aria-label="Search documentation"><Search size={18} /><span>Search documentation</span><kbd>Ctrl K</kbd></button>
     <dialog ref={dialog} className="docs-search-dialog" aria-labelledby="docs-search-title" onClose={() => setOpen(false)} onCancel={() => setOpen(false)} onClick={(event) => { if (event.target === dialog.current) setOpen(false); }}>
