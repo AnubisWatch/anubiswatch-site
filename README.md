@@ -85,5 +85,10 @@ Official reference: [GitHub custom-domain documentation](https://docs.github.com
   The Motion control pauses animations and stores the visitor's preference.
   Offscreen scenes and hidden tabs pause automatically through IntersectionObserver
   and the Page Visibility API. Device reduced-motion settings take precedence.
+- Typography and layout use rem units with a fluid 16–30px root size. At 4K,
+  the main content spans 2325px, body copy is around 32–34px, and navigation
+  around 28px. Desktop tests include 1920, 2560 and 3840px widths with explicit
+  readability checks. Mobile dashboard rows and workflow steps reflow instead
+  of shrinking into unreadable labels.
 - The Ma’at passage links to the Metropolitan Museum’s explanation of the
   weighing of the heart. It is a metaphor, not a technical product claim.

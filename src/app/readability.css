@@ -1,0 +1,175 @@
+/* Fluid type and rem-based layout scale together, without CSS zoom or transforms.
+   1440px: ~16.6px root; 1920px: ~19.5px; 2560px: ~23.4px; 4K: 30px.
+   SVG transform origins remain in their own viewBox coordinates. */
+html { font-size: clamp(16px, calc(8px + .6vw), 30px); }
+body { font-size: 1rem; }
+.section-shell { max-width: 77.5rem; }
+.brand { font-size: 1.5rem; }
+.desktop-nav a, .header-github { font-size: .9375rem; }
+.button { font-size: 1rem; }
+.button-small { font-size: .875rem; }
+.hero-description { font-size: 1.125rem; line-height: 1.8; }
+.hero-actions { flex-wrap: wrap; }
+.hero-actions .button { font-size: .9375rem; }
+.hero-command code { font-size: .875rem; }
+.hero-footnote { flex-wrap: wrap; font-size: .8125rem; }
+.hero-badge, .eyebrow, .card-label, .header-caption { font-size: .75rem; }
+.hero-scroll, .hero-edition { font-size: .75rem; letter-spacing: .08em; }
+.section-heading > p, .feature-card p, .feature-cluster p,
+.protocol-detail > p, .workflow-detail p, .myth-copy > p,
+.install-copy > p, .faq-list details > p { font-size: 1.0625rem; line-height: 1.8; }
+.section-heading > p { width: 28rem; max-width: 100%; }
+.orbit-mark { white-space: nowrap; transform: translateX(-20%); }
+.feature-card h3 { font-size: 1.625rem; }
+.feature-cluster h3 { font-size: 2.125rem; }
+.text-link, .faq-list summary { font-size: 1rem; }
+.faq-heading p { font-size: 1rem; }
+.credentials-inner > span { font-size: .875rem; }
+.tabs button, .install-tabs-row .tabs button { font-size: .9375rem; }
+.copy-button, .os-select button { font-size: .8125rem; }
+.protocol-picker button { font-size: .9375rem; }
+.protocol-snippet pre, .workflow-detail pre, .install-code { font-size: .875rem; line-height: 1.85; }
+.terminal-help, .terminal-result { font-size: .8125rem; }
+.terminal-controls { flex-wrap: wrap; }
+.terminal-controls > .mono { font-size: .75rem; }
+.install-copy > p { max-width: 29rem; }
+.install-note > span, .closing-note { font-size: .875rem; }
+.channel-list > span { font-size: .8125rem; }
+.journey-path strong, .journey-path small { font-size: .8125rem; }
+.api-card-copy > div:first-child { min-width: 0; }
+.api-routes { min-width: 13rem; }
+.api-routes > span, .api-routes i { font-size: .75rem; }
+.binary-stack > span { font-size: .75rem; }
+.workflow-steps strong { font-size: .9375rem; }
+.workflow-label { font-size: .75rem; }
+.dashboard-top h3 { font-size: 1.5rem; }
+.dashboard-top .mono, .window-bar, .window-sample { font-size: .75rem; }
+.dashboard-stats span { font-size: .8125rem; line-height: 1.5; }
+.dashboard-stats strong { font-size: 2.125rem; }
+.dashboard-stats small { font-size: .8125rem; }
+.chart-heading, .chart-heading small { font-size: .8125rem; }
+.chart-key, .chart-times, .chart-grid span { font-size: .75rem; }
+.chart-grid span::after { left: 4rem; }
+.latency-chart { padding-left: 4rem; }
+.service-row { font-size: .875rem; }
+.service-name { width: 13rem; flex-shrink: 0; }
+.service-name small { font-size: .75rem; overflow-wrap: anywhere; }
+.protocol-badge { font-size: .75rem; width: 3.25rem; flex-shrink: 0; }
+.service-latency { width: 4.5rem; font-size: .8125rem; flex-shrink: 0; }
+.service-state { width: 5rem; font-size: .8125rem; flex-shrink: 0; }
+.health-pill { font-size: .8125rem; }
+.dashboard-demo-footer > span, .dashboard-demo-footer button { font-size: .8125rem; }
+.dashboard-caption { flex-wrap: wrap; }
+.dashboard-caption > span { font-size: .75rem; }
+.dashboard-caption a { font-size: .8125rem; }
+.incident-panel p { font-size: .9375rem; }
+.incident-timeline { font-size: .8125rem; flex-wrap: wrap; justify-content: center; }
+.cluster-node strong { font-size: .875rem; }
+.cluster-node small, .cluster-center span { font-size: .75rem; }
+.cluster-node-detail { flex-wrap: wrap; font-size: .8125rem; }
+.cluster-node-detail > span:last-child { font-size: .75rem; }
+.myth-source { font-size: .8125rem; }
+.footer-main > div > p { font-size: .875rem; }
+.footer-links a { font-size: .875rem; }
+.footer-links > div > span { font-size: .75rem; }
+.footer-bottom { font-size: .75rem; flex-wrap: wrap; }
+.footer-bottom a { font-size: .75rem; }
+.motion-toggle { font-size: .75rem; }
+/* Icons follow their readable text; large diagram controls retain larger icons. */
+.lucide, .brand-github-icon { width: 1.15em; height: 1.15em; }
+.workflow-icon { font-size: 1.5rem; }
+.node-core { font-size: 1.375rem; }
+.protocol-emblem { font-size: 1.625rem; }
+.cluster-center > svg { width: 1.375rem; height: 1.375rem; }
+.dashboard-sidebar > svg { width: 1.25rem; height: 1.25rem; }
+.credentials-inner svg { width: 1.125rem; height: 1.125rem; }
+.svg-caption { font-size: 9px; }
+@media (max-width: 1200px) {
+  .hero-actions .button { padding: 1rem 1.125rem; font-size: .875rem; }
+  .api-card-copy { flex-direction: column; gap: 1.25rem; }
+}
+@media (max-width: 960px) {
+  .header-start { display: none; }
+  .service-name { width: 11rem; }
+  .dashboard-demo-footer { flex-wrap: wrap; }
+  .credentials-inner { gap: 1.25rem 1.75rem; }
+  .protocol-detail-title { flex-wrap: wrap; }
+  .protocol-detail-title > .mono { font-size: .75rem; }
+}
+@media (max-width: 700px) {
+  .section-shell { width: calc(100% - 2.5rem); }
+  .header-inner { width: calc(100% - 2rem); gap: .625rem; }
+  .brand { font-size: 1.25rem; }
+  .hero { padding-top: 7.25rem; }
+  .hero-badge { font-size: .75rem; }
+  .hero-actions { gap: .75rem; }
+  .hero-actions .button { padding: 1rem 1.125rem; font-size: .875rem; min-height: 3rem; }
+  .hero-command { max-width: 100%; }
+  .hero-command code { font-size: .8125rem; }
+  .hero-command .copy-button { margin-left: .25rem; }
+  .hero-scroll, .hero-edition { font-size: .625rem; }
+  .coordinate-top { top: -1.5rem; }
+  .guardian-caption { font-size: .625rem; gap: .5rem; }
+  .eyebrow, .card-label { font-size: .75rem; letter-spacing: .06em; flex-wrap: wrap; }
+  .credentials-inner { grid-template-columns: repeat(2, 1fr); gap: 1rem .625rem; }
+  .credentials-inner > span { font-size: .8125rem; justify-content: start; }
+  .section-heading > p, .feature-card p, .feature-cluster p,
+  .protocol-detail > p, .workflow-detail p, .myth-copy > p,
+  .install-copy > p, .faq-list details > p { font-size: 1rem; }
+  .feature-cluster h3 { font-size: 1.625rem; }
+  .window-bar { height: 2.5rem; gap: .5rem; }
+  .window-bar > span { font-size: .625rem; }
+  .window-sample { display: none !important; }
+  .dashboard-main { padding: 1.25rem 1rem 0; }
+  .dashboard-top h3 { font-size: 1.25rem; }
+  .dashboard-stats { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .dashboard-stats > div { padding-left: 0; border: 0; }
+  .dashboard-stats span { font-size: .8125rem; }
+  .dashboard-stats strong { font-size: 1.875rem; }
+  .chart-heading { flex-wrap: wrap; gap: .5rem; }
+  .chart-heading small { display: block; }
+  .chart-key { font-size: .625rem; }
+  .chart-grid span, .chart-times { font-size: .625rem; }
+  .chart-grid span::after { left: 3.5rem; }
+  .latency-chart { padding-left: 3.5rem; margin-bottom: 1.25rem; }
+  .service-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem .75rem; padding: 1rem 0; }
+  .service-name { width: auto; font-size: .875rem; }
+  .service-name small { font-size: .75rem; }
+  .protocol-badge { grid-column: 2; grid-row: 1; width: auto; font-size: .75rem; }
+  .heatmap { grid-column: 1 / -1; grid-row: 2; width: 100%; height: 1.125rem; }
+  .service-state { display: block; grid-column: 1; grid-row: 3; text-align: left; width: auto; }
+  .service-latency { grid-column: 2; grid-row: 3; width: auto; font-size: .8125rem; }
+  .dashboard-demo-footer { flex-direction: column; align-items: start; gap: .5rem; }
+  .dashboard-demo-footer > span, .dashboard-demo-footer button { font-size: .75rem; }
+  .dashboard-caption { gap: .625rem; }
+  .dashboard-caption > span, .dashboard-caption a { font-size: .75rem; }
+  .protocol-picker button { font-size: .875rem; padding: 1rem .75rem; }
+  .protocol-detail-title > span:last-child { font-size: .625rem; }
+  .protocol-snippet .mono { font-size: .625rem; }
+  .workflow-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .workflow-steps > button { align-items: flex-start; text-align: left; padding: .625rem; border: 1px solid var(--line); border-radius: .25rem; }
+  .workflow-steps > button:last-child { grid-column: 1 / -1; }
+  .workflow-steps strong { font-size: .9375rem; max-width: none; min-height: 0; margin-top: .75rem; }
+  .workflow-label { font-size: .75rem; }
+  .workflow-num { font-size: .75rem; margin-bottom: .75rem; }
+  .workflow-icon { width: 3rem; height: 3rem; font-size: 1.375rem; }
+  .workflow-detail pre { font-size: .8125rem; }
+  .cluster-visual { margin-top: 2.5rem; margin-bottom: 4rem; }
+  .cluster-node-detail { bottom: -2.5rem; gap: .5rem; line-height: 1.6; }
+  .cluster-node-detail > span:last-child { width: 100%; text-align: center; }
+  .cluster-node strong { font-size: .75rem; }
+  .cluster-node small, .cluster-center span { font-size: .625rem; }
+  .install-tabs-row { padding: 0 1rem; }
+  .install-tabs-row .tabs { gap: 1rem; }
+  .install-tabs-row .tabs button { font-size: .8125rem; }
+  .terminal-controls { gap: .75rem; }
+  .os-select button { font-size: .75rem; padding: .5rem; }
+  .install-code { font-size: .8125rem; }
+  .terminal-result, .terminal-help { font-size: .75rem; }
+  .faq-list summary { font-size: 1rem; line-height: 1.6; }
+  .footer-links { flex-wrap: wrap; gap: 2rem; }
+  .footer-links > div > span { font-size: .75rem; }
+  .footer-links a { font-size: .875rem; }
+  .footer-bottom { font-size: .75rem; gap: 1rem; }
+  .footer-bottom a { font-size: .75rem; }
+}

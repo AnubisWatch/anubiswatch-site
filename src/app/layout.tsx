@@ -4,6 +4,7 @@ import "@fontsource/cormorant-garamond/500-italic.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "./globals.css";
 import "./svg-motion.css";
+import "./readability.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://anubis.watch"),

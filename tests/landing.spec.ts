@@ -8,11 +8,33 @@ test("page renders without runtime errors, stays within the viewport and is acce
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("The JudgmentNever Sleeps.");
   await expect(page.getByRole("link", { name: "Summon your guardian" })).toHaveAttribute("href", "#get-started");
-  for (const width of testInfo.project.name === "desktop" ? [1440, 1024, 768] : [412, 390, 320]) {
-    await page.setViewportSize({ width, height: 1000 });
+  for (const width of testInfo.project.name === "desktop" ? [3840, 2560, 1920, 1440, 1024, 768] : [412, 390, 320]) {
+    await page.setViewportSize({ width, height: width >= 3840 ? 2160 : 1000 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    if (width === 3840) {
+      const readability = await page.evaluate(() => {
+        const size = (selector: string) => parseFloat(getComputedStyle(document.querySelector(selector)!).fontSize);
+        return {
+          hero: size(".hero-description"),
+          card: size(".feature-card p"),
+          navigation: size(".desktop-nav a"),
+          services: size(".service-row"),
+          title: size("h1"),
+          contentWidth: document.querySelector(".hero")!.getBoundingClientRect().width,
+        };
+      });
+      expect(readability.hero).toBeGreaterThanOrEqual(30);
+      expect(readability.card).toBeGreaterThanOrEqual(28);
+      expect(readability.navigation).toBeGreaterThanOrEqual(24);
+      expect(readability.services).toBeGreaterThanOrEqual(24);
+      expect(readability.title).toBeGreaterThanOrEqual(140);
+      expect(readability.contentWidth).toBeGreaterThanOrEqual(2200);
+      await page.screenshot({ path: "artifacts/desktop-4k-hero.png" });
+      await page.locator("#platform").screenshot({ path: "artifacts/desktop-4k-dashboard.png" });
+    }
   }
   await page.setViewportSize({ width: testInfo.project.name === "desktop" ? 1440 : 390, height: 1000 });
+  await page.evaluate(() => window.scrollTo(0, 0));
   await expect(page.locator(".guardian-logo")).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
   expect(results.violations.map((violation) => ({ id: violation.id, nodes: violation.nodes.map((node) => ({ target: node.target, reason: node.failureSummary })) }))).toEqual([]);
