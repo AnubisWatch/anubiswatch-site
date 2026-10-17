@@ -66,6 +66,7 @@ html { font-size: clamp(16px, calc(10px + .416667vw), 22px); }
   .docs-site .docs-article-layout { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 960px) {
+  .site .coordinate-top { top: -1.5rem; }
   .site .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .site :is(.feature-cluster, .feature-journey, .feature-alerts, .feature-storage) { grid-column: auto; grid-row: auto; }
   .site .feature-api { grid-column: 1 / -1; grid-row: auto; }
