@@ -1,0 +1,32 @@
+{
+  "name": "anubiswatch-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "preview": "serve out -l 3000"
+  },
+  "dependencies": {
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "motion": "14.3.0",
+    "lucide-react": "1.59.0",
+    "@fontsource-variable/manrope": "latest",
+    "@fontsource/cormorant-garamond": "latest",
+    "@fontsource/ibm-plex-mono": "latest"
+  },
+  "overrides": { "compression": "^1.8.2" },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/node": "latest",
+    "@playwright/test": "latest",
+    "@axe-core/playwright": "latest",
+    "serve": "latest"
+  }
+}
