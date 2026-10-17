@@ -23,6 +23,8 @@ Tests exercise desktop/mobile rendering, WCAG A/AA checks through axe,
 incident simulation/recovery, protocol and workflow keyboard navigation,
 installation choices, clipboard success/failure, mobile navigation and FAQ.
 `npm run preview` serves the exported site locally on port 3000.
+Browser tests own a separate static server on port 4173 and never reuse a
+potentially unrelated preview server.
 
 ## Deployment
 
@@ -78,5 +80,10 @@ Official reference: [GitHub custom-domain documentation](https://docs.github.com
   The original PNG is retained as a reference and Apple touch icon.
 - All typography is bundled locally; continuous decorative motion respects
   `prefers-reduced-motion`, with keyboard support for all tabs.
+- Native SVG scenes add celestial scanning, globe/probe rings, alert dispatch,
+  stacked binary layers, protocol packets, balanced scales and a winged solar disc.
+  The Motion control pauses animations and stores the visitor's preference.
+  Offscreen scenes and hidden tabs pause automatically through IntersectionObserver
+  and the Page Visibility API. Device reduced-motion settings take precedence.
 - The Ma’at passage links to the Metropolitan Museum’s explanation of the
   weighing of the heart. It is a metaphor, not a technical product claim.

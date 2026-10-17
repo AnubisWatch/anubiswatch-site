@@ -86,3 +86,51 @@ test("FAQ expands and navigation reaches the installation section", async ({ pag
   await page.getByText("How does the Egyptian mythology fit?", { exact: true }).click();
   await expect(page.locator("details[open]")).toContainText("feather of Ma’at");
 });
+
+test("SVG motion pauses offscreen, remembers the manual choice and respects device preferences", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const sweep = page.locator(".celestial-sweep");
+  const beam = page.locator(".balance-beam");
+  await expect(sweep).toHaveCSS("animation-play-state", "running");
+  await expect(beam).toHaveCSS("animation-play-state", "paused");
+  await page.getByRole("button", { name: "Pause animations", exact: true }).click();
+  await expect(sweep).toHaveCSS("animation-play-state", "paused");
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Resume animations", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(sweep).toHaveCSS("animation-play-state", "paused");
+  await page.getByRole("button", { name: "Resume animations", exact: true }).click();
+  await expect(sweep).toHaveCSS("animation-play-state", "running");
+  await page.evaluate(() => {
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(sweep).toHaveCSS("animation-play-state", "paused");
+  await page.evaluate(() => {
+    Reflect.deleteProperty(document, "hidden");
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(sweep).toHaveCSS("animation-play-state", "running");
+  await page.locator(".myth-art").scrollIntoViewIfNeeded();
+  await expect(beam).toHaveCSS("animation-play-state", "running");
+  await expect(sweep).toHaveCSS("animation-play-state", "paused");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(beam).toHaveCSS("animation-name", "none");
+  await expect(page.getByRole("button", { name: "Motion reduced by device settings" })).toBeDisabled();
+});
+
+test("motion controls still work when browser storage is unavailable", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.addInitScript(() => {
+    Storage.prototype.getItem = () => { throw new Error("Storage unavailable"); };
+    Storage.prototype.setItem = () => { throw new Error("Storage unavailable"); };
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Pause animations", exact: true }).click();
+  await expect(page.locator(".celestial-sweep")).toHaveCSS("animation-play-state", "paused");
+  await page.getByRole("button", { name: "Resume animations", exact: true }).click();
+  await expect(page.locator(".celestial-sweep")).toHaveCSS("animation-play-state", "running");
+  expect(errors).toEqual([]);
+});
