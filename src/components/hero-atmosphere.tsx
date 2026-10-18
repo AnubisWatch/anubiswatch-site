@@ -35,6 +35,7 @@ export function HeroAtmosphere({ paused = false, quietSelector, anchorSelector }
     let activity: number = config.idleStrength;
     let palette: (typeof config.palettes)[keyof typeof config.palettes] = config.palettes.dark;
     let focus: Point = { x: 0, y: 0 };
+    let guardianRadius = 0;
     let quiet: { x: number; y: number; width: number; height: number } | null = null;
     let down: (Point & { id: number; at: number; moved: boolean }) | null = null;
     const pointer = { x: 0, y: 0, strength: 0, active: false };
@@ -127,6 +128,12 @@ export function HeroAtmosphere({ paused = false, quietSelector, anchorSelector }
       for (const s of sparks) { ctx!.strokeStyle = rgba(palette.green, (1 - s.age / config.sparks.life) ** 2 * 0.75 * strength); ctx!.beginPath(); ctx!.moveTo(s.x, s.y); ctx!.lineTo(s.x - s.vx * 0.045, s.y - s.vy * 0.045); ctx!.stroke(); }
       // Fade everything behind copy and at the edges, including user waves.
       ctx!.save(); ctx!.globalCompositeOperation = "destination-out";
+      if (guardianRadius) {
+        // Keep the original logo's transparent eye and face planes uncluttered.
+        const mask = ctx!.createRadialGradient(focus.x, focus.y, guardianRadius * 0.4, focus.x, focus.y, guardianRadius);
+        mask.addColorStop(0, "rgba(0,0,0,.98)"); mask.addColorStop(0.65, "rgba(0,0,0,.85)"); mask.addColorStop(1, "rgba(0,0,0,0)");
+        ctx!.fillStyle = mask; ctx!.fillRect(focus.x - guardianRadius, focus.y - guardianRadius, guardianRadius * 2, guardianRadius * 2);
+      }
       if (quiet) {
         ctx!.save(); ctx!.translate(quiet.x + quiet.width / 2, quiet.y + quiet.height / 2); ctx!.scale(quiet.width * 0.8, quiet.height * 0.85);
         const mask = ctx!.createRadialGradient(0, 0, 0.2, 0, 0, 1); mask.addColorStop(0, "rgba(0,0,0,.96)"); mask.addColorStop(0.65, "rgba(0,0,0,.88)"); mask.addColorStop(1, "rgba(0,0,0,0)"); ctx!.fillStyle = mask; ctx!.fillRect(-1, -1, 2, 2); ctx!.restore();
@@ -183,6 +190,7 @@ export function HeroAtmosphere({ paused = false, quietSelector, anchorSelector }
       canvas!.width = Math.round(width * ratio); canvas!.height = Math.round(height * ratio); canvas!.dataset.dpr = ratio.toFixed(3);
       const anchor = anchorSelector ? host!.querySelector(anchorSelector)?.getBoundingClientRect() : null;
       focus = anchor ? { x: anchor.left - box.left + anchor.width / 2, y: anchor.top - box.top + anchor.height / 2 } : { x: width * 0.72, y: height * 0.5 };
+      guardianRadius = anchor ? Math.min(anchor.width, anchor.height) * config.guardianQuietRadius : 0;
       const copy = quietSelector ? host!.querySelector(quietSelector)?.getBoundingClientRect() : null;
       quiet = copy ? { x: copy.left - box.left, y: copy.top - box.top, width: copy.width, height: copy.height } : null;
       let seed: number = config.seed;

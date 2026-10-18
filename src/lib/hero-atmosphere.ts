@@ -14,6 +14,7 @@ export const atmosphere = {
   drift: 15,
   entrance: 1.6,
   edgeFade: 72,
+  guardianQuietRadius: 0.36,
   ripples: { max: 6, mobile: 3, life: 2.2, radius: 215, mobileRadius: 125 },
   sparks: { max: 64, mobile: 24, perTap: 9, life: 1.3 },
   trails: { max: 18, mobile: 6, life: 0.85, spacing: 17 },

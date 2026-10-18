@@ -122,7 +122,8 @@ image URL in `src/lib/social-image.ts` can use the site's own HTTPS URL.
 `HeroAtmosphere` adds a full-viewport Canvas 2D field around the existing SVG
 guardian, while hero content retains the shared layout. Ma'at feathers, scales,
 probe heartbeats and orbital signal routes form the scene. A soft mask lowers
-detail behind the copy and fades objects and waves at every edge.
+detail behind the copy and the transparent logo, and fades objects and waves at
+every edge.
 
 Passive pointer listeners apply a local, distance-weighted influence. Background
 taps produce three related verdict-wave patterns and short-lived signal sparks;
