@@ -96,6 +96,25 @@ Official reference: [GitHub custom-domain documentation](https://docs.github.com
 - The Ma’at passage links to the Metropolitan Museum’s explanation of the
   weighing of the heart. It is a metaphor, not a technical product claim.
 
+## Social sharing image
+
+`public/images/anubiswatch-og-v2.png` is the 1200 × 630 Open Graph and Twitter
+card shared by the homepage and all documentation pages. It uses the existing
+SVG logo and bundled fonts, with a simplified message for small previews.
+Page metadata explicitly includes the image because Next.js replaces nested
+Open Graph objects rather than merging their fields. Sharing titles remain
+specific to each documentation page.
+
+After installing Playwright Chromium, regenerate the committed image with
+`npm run generate:og`. Its HTML, vector ornament and local font inputs live in
+`scripts/generate-og.mjs`; rendering needs no network access or image service.
+The exported PNG is served directly by GitHub Pages. Tests inspect initial HTML
+for every route and verify the image response, format and dimensions.
+While the custom domain's HTTPS certificate is pending, sharing metadata points
+to the public PNG on `raw.githubusercontent.com` so crawler image downloads
+use a valid HTTPS connection. Once the domain certificate is ready, the shared
+image URL in `src/lib/social-image.ts` can use the site's own HTTPS URL.
+
 ## Embedded documentation
 
 The website exports 17 documentation pages under /docs/, with local search,

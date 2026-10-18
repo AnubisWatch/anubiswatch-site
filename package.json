@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "preview": "serve out -l 3000",
+    "generate:og": "node scripts/generate-og.mjs",
     "prebuild": "node scripts/build-docs-index.mjs",
     "predev": "node scripts/build-docs-index.mjs"
   },

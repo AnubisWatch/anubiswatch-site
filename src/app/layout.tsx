@@ -8,14 +8,15 @@ import "./readability.css";
 import "./themes.css";
 import "./layout.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { socialImage, socialTwitter } from "@/lib/social-image";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://anubis.watch"),
   title: "AnubisWatch — The Judgment Never Sleeps",
   description: "Your infrastructure has a guardian. Open-source, self-hosted uptime and synthetic monitoring in a single Go binary. 10 protocols, Raft clustering, embedded dashboard and alerts.",
   alternates: { canonical: "/" },
-  openGraph: { type: "website", url: "https://anubis.watch", siteName: "AnubisWatch", title: "AnubisWatch — The Judgment Never Sleeps", description: "Your infrastructure has a guardian. Self-hosted monitoring. One Go binary. Ten protocols.", images: [{ url: "/images/anubis-presentation.png", width: 1376, height: 768, alt: "AnubisWatch monitoring platform overview" }] },
-  twitter: { card: "summary_large_image", title: "AnubisWatch — The Judgment Never Sleeps", images: ["/images/anubis-presentation.png"] },
+  openGraph: { type: "website", url: "https://anubis.watch", siteName: "AnubisWatch", title: "AnubisWatch — The Judgment Never Sleeps", description: "Your infrastructure has a guardian. Self-hosted monitoring. One Go binary. Ten protocols.", images: [socialImage] },
+  twitter: { ...socialTwitter, title: "AnubisWatch — The Judgment Never Sleeps", description: "Your infrastructure has a guardian. Self-hosted monitoring. One Go binary. Ten protocols." },
   icons: { icon: { url: "/images/anubis-logo.svg", type: "image/svg+xml" }, apple: "/images/anubis-logo.png" },
 };
 
