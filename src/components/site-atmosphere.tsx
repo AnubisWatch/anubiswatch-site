@@ -5,7 +5,7 @@ import { useMotionControl } from "./motion-control";
 import { siteAtmosphere as config } from "@/lib/site-atmosphere";
 
 type Point = { x: number; y: number };
-type Unit = Point & { el: SVGGElement; phase: number; depth: number; dx: number; dy: number; px: number; py: number; alpha: number; visible: boolean };
+type Unit = Point & { el: SVGGElement; response: SVGGElement; phase: number; depth: number; dx: number; dy: number; px: number; py: number; alpha: number; visible: boolean };
 type Ripple = Point & { age: number; variant: number; energy: number };
 type Spark = Point & { age: number; vx: number; vy: number };
 type Trail = Point & { age: number };
@@ -18,23 +18,27 @@ function attr(element: Element, name: string, value: string | number) {
   if (element.getAttribute(name) !== next) element.setAttribute(name, next);
 }
 
-/** A fixed viewport-sized SVG virtualizes the field across any document length. */
+/** Two root-level viewport layers share one bounded simulation, outside section clips. */
 export function SiteAtmosphere() {
   const id = useId().replace(/:/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
+  const interactionRef = useRef<SVGSVGElement>(null);
   const [paused] = useMotionControl();
   const pausedRef = useRef(paused);
   const syncRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg) return;
+    const svg = svgRef.current, overlay = interactionRef.current;
+    if (!svg || !overlay) return;
     const abort = new AbortController(), passive = { passive: true, signal: abort.signal };
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const unitElements = [...svg.querySelectorAll<SVGGElement>("[data-unit]")];
-    const waveElements = [...svg.querySelectorAll<SVGGElement>("[data-wave]")];
-    const sparkElements = [...svg.querySelectorAll<SVGPathElement>("[data-spark]")];
-    const trailElements = [...svg.querySelectorAll<SVGPathElement>("[data-trail]")];
+    const responses = [...overlay.querySelectorAll<SVGGElement>("[data-response]")];
+    const aura = overlay.querySelector<SVGGElement>("[data-aura]")!;
+    const orbitElements = [...aura.querySelectorAll<SVGGElement>("[data-orbit]")];
+    const waveElements = [...overlay.querySelectorAll<SVGGElement>("[data-wave]")];
+    const sparkElements = [...overlay.querySelectorAll<SVGPathElement>("[data-spark]")];
+    const trailElements = [...overlay.querySelectorAll<SVGPathElement>("[data-trail]")];
     const wireElements = [...svg.querySelectorAll<SVGPathElement>("[data-wire]")];
     const routes = [...svg.querySelectorAll<SVGPathElement>("[data-route]")];
     const packets = [...svg.querySelectorAll<SVGCircleElement>("[data-packet]")];
@@ -52,7 +56,7 @@ export function SiteAtmosphere() {
     function measure() {
       zones = [...document.querySelectorAll(config.quietSelector)].map(element => {
         const r = element.getBoundingClientRect();
-        return { left: r.left - 16, right: r.right + 16, top: r.top + scroll - 16, bottom: r.bottom + scroll + 16, floor: element.matches(".docs-reading") ? 0.1 : 0.006 };
+        return { left: r.left - 16, right: r.right + 16, top: r.top + scroll - 16, bottom: r.bottom + scroll + 16, floor: element.matches(".docs-reading") ? 0.1 : 0.06 };
       }).filter(r => r.right - r.left > 32 && r.bottom - r.top > 32);
       floating = [...document.querySelectorAll(config.floatingSelector)];
       measured = true; scrollDirty = true;
@@ -81,17 +85,25 @@ export function SiteAtmosphere() {
       const intro = reduced ? 1 : clamp(entrance / config.entrance);
       const smooth = dt ? 1 - Math.exp(-dt * 9) : 1;
       const span = height + config.overscan * 2;
+      const reacting = !reduced && !pausedRef.current;
+      attr(overlay!, "visibility", reacting ? "visible" : "hidden");
       let showing = 0;
       for (const unit of units) {
         const x = unit.x * width + Math.sin(ambient * (0.12 + unit.depth * 0.1) + unit.phase) * config.drift * unit.depth;
         const y = wrap(unit.y * span - sceneScroll * config.parallax * unit.depth, span) - config.overscan + Math.cos(ambient * 0.15 + unit.phase) * config.drift;
         const dx = x - pointer.x, dy = y - pointer.y, distance = Math.hypot(dx, dy);
-        const influence = (1 - clamp(distance / config.pointerRadius)) ** 2 * config.displacement * pointer.strength * unit.depth;
-        let tx = dx / Math.max(1, distance) * influence, ty = dy / Math.max(1, distance) * influence;
+        const proximity = (1 - clamp(distance / config.pointerRadius)) ** 2;
+        const influence = proximity * config.displacement * pointer.strength * unit.depth;
+        const swirl = Math.sin(ambient * 1.3 + unit.phase) * 0.55;
+        const radial = 0.35 + Math.sin(unit.phase) * 0.9;
+        let tx = (dx * radial - dy * swirl) / Math.max(1, distance) * influence, ty = (dy * radial + dx * swirl) / Math.max(1, distance) * influence;
+        let waveLight = 0;
         for (const wave of waves) {
           const wx = x - wave.x, wy = y - wave.y, d = Math.hypot(wx, wy), p = wave.age / config.ripples.life;
           const radius = (mobile ? config.ripples.mobileRadius : config.ripples.radius) * (1 - (1 - p) ** 2);
-          const force = (1 - clamp(Math.abs(d - radius) / 42)) * (1 - p) * 15 * wave.energy;
+          const envelope = (1 - clamp(Math.abs(d - radius) / 85)) ** 2 * (1 - p) * wave.energy;
+          const force = envelope * config.ripples.force;
+          waveLight = Math.max(waveLight, envelope);
           tx += wx / Math.max(1, d) * force; ty += wy / Math.max(1, d) * force;
         }
         if (dt) { unit.dx += (tx - unit.dx) * smooth; unit.dy += (ty - unit.dy) * smooth; }
@@ -101,10 +113,17 @@ export function SiteAtmosphere() {
         unit.alpha += (target - unit.alpha) * smooth;
         const show = unit.py > -25 && unit.py < height + 25 && unit.alpha > 0.008;
         if (show !== unit.visible) { attr(unit.el, "visibility", show ? "visible" : "hidden"); attr(unit.el, "data-visible", String(show)); unit.visible = show; }
-        if (!show) continue; // Invisible SVG units receive no transform/opacity writes.
-        showing++;
-        attr(unit.el, "transform", `translate(${unit.px.toFixed(2)} ${unit.py.toFixed(2)}) rotate(${(Math.sin(ambient * 0.12 + unit.phase) * 12 + unit.phase * 12).toFixed(2)})`);
-        attr(unit.el, "opacity", unit.alpha.toFixed(3));
+        const transform = `translate(${unit.px.toFixed(2)} ${unit.py.toFixed(2)}) rotate(${(Math.sin(ambient * 0.12 + unit.phase) * 12 + unit.phase * 12).toFixed(2)})`;
+        if (show) {
+          showing++;
+          attr(unit.el, "transform", transform);
+          attr(unit.el, "opacity", unit.alpha.toFixed(3));
+        }
+        // Foreground echoes use radial distance only: no card/text rectangle masks.
+        const response = Math.min(1, proximity * pointer.strength * 1.8 + waveLight) * config.responseOpacity * edge * intro;
+        const showResponse = reacting && response > 0.008;
+        attr(unit.response, "visibility", showResponse ? "visible" : "hidden");
+        if (showResponse) { attr(unit.response, "transform", transform); attr(unit.response, "opacity", response.toFixed(3)); }
       }
       attr(svg!, "data-visible", showing);
       let wires = 0;
@@ -128,13 +147,27 @@ export function SiteAtmosphere() {
         const py = u ** 3 * (y + 45) + 3 * u ** 2 * t * (y - 90 + bend) + 3 * u * t ** 2 * (y + 100 - bend) + t ** 3 * (y - 30);
         attr(packets[lane], "cx", x.toFixed(2)); attr(packets[lane], "cy", py.toFixed(2)); attr(packets[lane], "opacity", (quiet(x, py) * intro * 0.42).toFixed(3));
       });
+      const auraVisible = reacting && pointer.strength > 0.015;
+      attr(aura, "visibility", auraVisible ? "visible" : "hidden");
+      if (auraVisible) {
+        attr(aura, "transform", `translate(${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)})`);
+        attr(aura, "opacity", (pointer.strength * intro * 0.52).toFixed(3));
+        orbitElements.forEach((el, i) => {
+          const show = !mobile || i < 3;
+          attr(el, "visibility", show ? "visible" : "hidden");
+          if (!show) return;
+          const angle = i * tau / config.orbitProbes + ambient * (i % 2 ? 0.24 : -0.18);
+          const radius = 65 + i % 3 * 31 + Math.sin(ambient * 1.5 + i) * 12;
+          attr(el, "transform", `translate(${(Math.cos(angle) * radius).toFixed(2)} ${(Math.sin(angle) * radius).toFixed(2)}) rotate(${(angle * 180 / Math.PI).toFixed(1)})`);
+        });
+      }
       waveElements.forEach((group, i) => {
         const wave = waves[i];
         attr(group, "visibility", wave ? "visible" : "hidden");
         if (!wave) return;
         const p = clamp(wave.age / config.ripples.life), radius = (mobile ? config.ripples.mobileRadius : config.ripples.radius) * (1 - (1 - p) ** 2);
         attr(group, "transform", `translate(${wave.x} ${wave.y})`);
-        attr(group, "opacity", (Math.sin(Math.min(1, p * 7) * Math.PI / 2) * (1 - p) ** 1.6 * wave.energy * intro * Math.max(0.28, quiet(wave.x, wave.y))).toFixed(3));
+        attr(group, "opacity", (Math.sin(Math.min(1, p * 9) * Math.PI / 2) * (1 - p) ** 1.6 * Math.min(1.4, wave.energy) * intro * 0.58).toFixed(3));
         attr(group, "data-variant", wave.variant);
         const circles = group.querySelectorAll("circle");
         attr(circles[0], "r", radius.toFixed(2)); attr(circles[0], "stroke-dasharray", wave.variant === 2 ? "3 11" : "none");
@@ -145,11 +178,14 @@ export function SiteAtmosphere() {
       sparkElements.forEach((path, i) => {
         const s = sparks[i]; attr(path, "visibility", s ? "visible" : "hidden"); if (!s) return;
         attr(path, "d", `M${s.x.toFixed(2)} ${s.y.toFixed(2)}l${(-s.vx * 0.045).toFixed(2)} ${(-s.vy * 0.045).toFixed(2)}`);
-        attr(path, "opacity", ((1 - s.age / config.sparks.life) ** 2 * 0.75 * quiet(s.x, s.y) * intro).toFixed(3));
+        attr(path, "opacity", ((1 - s.age / config.sparks.life) ** 2 * 0.7 * intro).toFixed(3));
       });
       trailElements.forEach((path, i) => {
-        const a = trails[i], b = trails[i + 1]; attr(path, "visibility", a && b ? "visible" : "hidden"); if (!a || !b) return;
-        attr(path, "d", `M${a.x} ${a.y}L${b.x} ${b.y}`); attr(path, "opacity", ((1 - b.age / config.trails.life) ** 2 * 0.28 * quiet(b.x, b.y)).toFixed(3));
+        const a = trails[i], b = trails[i + 1];
+        const show = a && b && Math.hypot(a.x - b.x, a.y - b.y) <= config.trails.maxSegment;
+        attr(path, "visibility", show ? "visible" : "hidden"); if (!show) return;
+        const proximity = (1 - clamp(Math.hypot(b.x - pointer.x, b.y - pointer.y) / config.pointerRadius)) ** 2;
+        attr(path, "d", `M${a.x} ${a.y}L${b.x} ${b.y}`); attr(path, "opacity", ((1 - b.age / config.trails.life) ** 2 * proximity * 0.48 * intro).toFixed(3));
       });
     }
     function tick(timestamp: number) {
@@ -160,7 +196,7 @@ export function SiteAtmosphere() {
       const dt = Math.min(elapsed, 0.05); previous = timestamp; time += dt; entrance += dt;
       const smooth = 1 - Math.exp(-dt * 6);
       activity += ((time - lastActivity > config.idleAfter ? config.idleStrength : 1) - activity) * smooth;
-      pointer.strength += ((pointer.active ? activity : 0) - pointer.strength) * smooth;
+      pointer.strength += ((pointer.active && time - lastActivity < config.idleAfter ? 1 : 0) - pointer.strength) * smooth;
       ambient += dt * (0.5 + activity * 0.5); sceneScroll += (scroll - sceneScroll) * smooth;
       const before = waves.length + sparks.length + trails.length;
       for (const wave of waves) wave.age += dt;
@@ -190,12 +226,14 @@ export function SiteAtmosphere() {
       if (w !== width || h !== height) {
         width = w; height = h; mobile = width < config.mobileWidth;
         attr(svg!, "viewBox", `0 0 ${width} ${height}`);
+        attr(overlay!, "viewBox", `0 0 ${width} ${height}`);
         let seed: number = config.seed;
         const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
         const count = mobile ? config.units.mobile : clamp(Math.round(width * height / config.densityArea), config.units.min, config.units.max);
         const columns = Math.max(3, Math.round(Math.sqrt(count * width / height))), rows = Math.ceil(count / columns);
-        units = unitElements.slice(0, count).map((el, i) => ({ el, x: ((i % columns) + 0.12 + random() * 0.76) / columns, y: (Math.floor(i / columns) + 0.1 + random() * 0.8) / rows, phase: random() * tau, depth: 0.3 + random() * 0.7, dx: 0, dy: 0, px: 0, py: 0, alpha: 0, visible: false }));
+        units = unitElements.slice(0, count).map((el, i) => ({ el, response: responses[i], x: ((i % columns) + 0.12 + random() * 0.76) / columns, y: (Math.floor(i / columns) + 0.1 + random() * 0.8) / rows, phase: random() * tau, depth: 0.3 + random() * 0.7, dx: 0, dy: 0, px: 0, py: 0, alpha: 0, visible: false }));
         unitElements.forEach((el, i) => { attr(el, "visibility", "hidden"); attr(el, "data-visible", "false"); attr(el, "data-active", String(i < count)); });
+        responses.forEach(el => attr(el, "visibility", "hidden"));
         attr(svg!, "data-probes", count);
       }
       measured = false; sync();
@@ -205,7 +243,8 @@ export function SiteAtmosphere() {
     function move(event: PointerEvent) {
       if (down && down.id === event.pointerId && Math.hypot(event.clientX - down.x, event.clientY - down.y) > config.tap.distance) down.moved = true;
       if (event.pointerType === "touch" || !interactive()) return;
-      pointer.x = event.clientX; pointer.y = event.clientY; pointer.active = !excluded(event.target); lastActivity = time;
+      // Hit testing only gates bursts. Hover follows the document, including text/cards.
+      pointer.x = event.clientX; pointer.y = event.clientY; pointer.active = true; lastActivity = time;
       const last = trails.at(-1);
       if (pointer.active && time - lastTrail > 0.035 && (!last || Math.hypot(pointer.x - last.x, pointer.y - last.y) > config.trails.spacing)) {
         trails.push({ x: pointer.x, y: pointer.y, age: 0 }); trails = trails.slice(-(mobile ? config.trails.mobile : config.trails.max)); lastTrail = time; counts();
@@ -218,21 +257,21 @@ export function SiteAtmosphere() {
     function release(event: PointerEvent) {
       if (down && down.id !== event.pointerId) return;
       const start = down; down = null;
-      if (!start || !interactive() || event.button !== 0 || excluded(event.target) || start.moved || Math.abs(scroll - start.scroll) > config.tap.distance || performance.now() - start.at > config.tap.duration) return;
+      if (!start || !interactive() || event.button !== 0 || excluded(event.target) || start.moved || window.getSelection()?.isCollapsed === false || Math.abs(scroll - start.scroll) > config.tap.distance || performance.now() - start.at > config.tap.duration) return;
       const x = event.clientX, y = event.clientY; if (Math.hypot(x - start.x, y - start.y) > config.tap.distance) return;
       const oldActivity = lastActivity; lastActivity = time;
       const nearby = waves.find(wave => wave.age < 0.22 && Math.hypot(wave.x - x, wave.y - y) < 45);
       if (nearby) nearby.energy = Math.min(1.4, nearby.energy + 0.15);
       else waves.push({ x, y, age: 0, energy: 1, variant: (Math.floor(x / 180) + Math.floor(y / 180) + (time - oldActivity < 0.4 ? 1 : 0)) % 3 });
       waves = waves.slice(-(mobile ? config.ripples.mobile : config.ripples.max));
-      for (let i = 0; i < config.sparks.perTap; i++) { const angle = tau * i / config.sparks.perTap + time; sparks.push({ x, y, age: 0, vx: Math.cos(angle) * (35 + i * 3), vy: Math.sin(angle) * (35 + i * 3) }); }
+      for (let i = 0; i < config.sparks.perTap; i++) { const angle = tau * i / config.sparks.perTap + time; sparks.push({ x, y, age: 0, vx: Math.cos(angle) * (110 + i * 8), vy: Math.sin(angle) * (110 + i * 8) }); }
       sparks = sparks.slice(-(mobile ? config.sparks.mobile : config.sparks.max)); counts();
     }
-    document.addEventListener("pointermove", move, passive); document.addEventListener("pointerdown", press, passive); document.addEventListener("pointerup", release, passive);
+    document.addEventListener("pointermove", move, { ...passive, capture: true }); document.addEventListener("pointerdown", press, passive); document.addEventListener("pointerup", release, passive);
     document.addEventListener("pointercancel", () => { down = null; pointer.active = false; }, passive);
     document.addEventListener("pointerout", event => { if (!event.relatedTarget) { pointer.active = false; down = null; } }, passive);
     window.addEventListener("blur", () => { pointer.active = false; down = null; }, passive);
-    window.addEventListener("scroll", () => { scroll = window.scrollY; scrollDirty = true; pointer.active = false; invalidate(); }, passive);
+    window.addEventListener("scroll", () => { scroll = window.scrollY; scrollDirty = true; if (pointer.active) lastActivity = time; invalidate(); }, passive);
     window.addEventListener("resize", resize, passive);
     document.addEventListener("visibilitychange", () => { hidden = document.hidden; down = null; pointer.active = false; sync(); }, { signal: abort.signal });
     media.addEventListener("change", () => { reduced = media.matches; waves = []; sparks = []; trails = []; pointer.active = false; pointer.strength = 0; counts(); sync(); }, { signal: abort.signal });
@@ -247,7 +286,7 @@ export function SiteAtmosphere() {
   }, []);
 
   useEffect(() => { pausedRef.current = paused; syncRef.current?.(); }, [paused]);
-  return <svg ref={svgRef} className="site-atmosphere" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none">
+  return <><svg ref={svgRef} className="site-atmosphere" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none">
     <defs>
       <symbol id={id + "-soul"} viewBox="-16 -16 32 32"><circle r="8" /><path d="M-16 0H-5L-1-7 4 7 8 0H16" /></symbol>
       <symbol id={id + "-feather"} viewBox="-16 -16 32 32"><path d="M-10 10Q-14-4 12-14Q15 6-10 10ZM-14 14 9-11M-6 4-10-1M-1-1-7-5M4-6-1-9" /></symbol>
@@ -258,8 +297,15 @@ export function SiteAtmosphere() {
     <g className="field-signal">{Array.from({ length: 3 }, (_, i) => <circle key={i} data-packet="" r="2" opacity="0" />)}</g>
     <g className="field-wires">{Array.from({ length: config.links.max }, (_, i) => <path key={i} data-wire="" opacity="0" />)}</g>
     <g>{Array.from({ length: config.units.max }, (_, i) => <g key={i} data-unit={i} visibility="hidden" className={i % 4 === 0 ? "field-soul" : "field-glyph"}><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x={-(7 + i % 7)} y={-(7 + i % 7)} width={14 + i % 7 * 2} height={14 + i % 7 * 2} /></g>)}</g>
+  </svg><svg ref={interactionRef} className="site-interaction-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none" visibility="hidden">
+    <g>{Array.from({ length: config.units.max }, (_, i) => <g key={i} data-response={i} visibility="hidden" className={i % 4 === 0 ? "field-soul" : "field-glyph"}><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x={-12} y={-12} width={24} height={24} /></g>)}</g>
+    <g data-aura="" className="field-aura" visibility="hidden">
+      <circle r="38" opacity=".18" /><circle r="108" opacity=".08" />
+      <path d="M-58-17A61 61 0 0 1-18-58M58 17A61 61 0 0 1 18 58" opacity=".65" />
+      {Array.from({ length: config.orbitProbes }, (_, i) => <g key={i} data-orbit="" className={i % 2 ? "field-soul" : "field-glyph"}><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x="-7" y="-7" width="14" height="14" /></g>)}
+    </g>
     <g className="field-trails">{Array.from({ length: config.trails.max }, (_, i) => <path key={i} data-trail="" visibility="hidden" />)}</g>
     <g className="field-waves">{Array.from({ length: config.ripples.max }, (_, i) => <g key={i} data-wave="" visibility="hidden"><circle /><circle className="field-wave-inner" /><path d="M-1-.025V.025M1-.025V.025M-.025-1H.025M-.025 1H.025" vectorEffect="non-scaling-stroke" /></g>)}</g>
     <g className="field-sparks">{Array.from({ length: config.sparks.max }, (_, i) => <path key={i} data-spark="" visibility="hidden" />)}</g>
-  </svg>;
+  </svg></>;
 }

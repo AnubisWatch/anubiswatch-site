@@ -1,4 +1,4 @@
-/** One bounded SVG field shared by the marketing site and documentation. */
+/** Shared budgets for the ambient field and its content-safe interaction overlay. */
 export const siteAtmosphere = {
   seed: 0x4d414154,
   mobileWidth: 700,
@@ -10,17 +10,19 @@ export const siteAtmosphere = {
   idleStrength: 0.3,
   drift: 15,
   parallax: 0.19,
-  pointerRadius: 210,
-  displacement: 27,
+  pointerRadius: 310,
+  displacement: 68,
+  responseOpacity: 0.38,
+  orbitProbes: 8,
   entrance: 1.5,
   quietFade: 72,
   edgeFade: 65,
   links: { max: 24, mobile: 5, radius: 180 },
-  ripples: { max: 6, mobile: 3, life: 2.2, radius: 205, mobileRadius: 120 },
+  ripples: { max: 6, mobile: 3, life: 1.8, radius: 280, mobileRadius: 155, force: 64 },
   sparks: { max: 54, mobile: 18, perTap: 9, life: 1.3 },
-  trails: { max: 14, mobile: 5, life: 0.85, spacing: 18 },
+  trails: { max: 14, mobile: 5, life: 0.85, spacing: 18, maxSegment: 120 },
   tap: { distance: 10, duration: 450 },
   quietSelector: ".hero-copy, .guardian-logo, .section-heading, .feature-card, .dashboard-frame, .protocol-explorer, .workflow-steps, .workflow-detail, .myth-copy, .install-copy, .install-terminal, .documentation-cards, .faq-heading, .faq-list, .closing h2, .site-footer, .oxog-copy, .oxog-signature, .docs-reading, .docs-footer, .docs-mobile-bar, [role='dialog']",
   floatingSelector: ".site-header, .docs-header, .docs-sidebar, .docs-toc",
-  controlSelector: "a, button, input, textarea, select, summary, label, h1, h2, h3, p, pre, code, [role='button'], [role='dialog'], [contenteditable], .hero-copy, .feature-card, .dashboard-frame, .docs-reading, .protocol-explorer, .install-terminal, .faq-list",
+  controlSelector: "a, button, input, textarea, select, summary, label, h1, h2, h3, h4, p, pre, code, [role='button'], [role='link'], [role='dialog'], [contenteditable]",
 } as const;

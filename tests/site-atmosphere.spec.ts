@@ -8,7 +8,7 @@ async function animate(page: Page) {
     window.fieldWrites = 0;
     const set = SVGElement.prototype.setAttribute;
     SVGElement.prototype.setAttribute = function (key, value) {
-      if (this.closest(".site-atmosphere")) window.fieldWrites++;
+      if (this.closest(".site-atmosphere, .site-interaction-layer")) window.fieldWrites++;
       return set.call(this, key, value);
     };
   });
@@ -19,6 +19,83 @@ async function animate(page: Page) {
   await page.clock.pauseAt(new Date("2030-01-01T01:00:00Z"));
   await page.clock.runFor(1800);
 }
+
+test("pointer reactions cross text and clipped cards above content, with viewport coordinates during scroll", async ({ page }, info) => {
+  test.setTimeout(60_000);
+  await animate(page);
+  const svg = field(page), overlay = page.locator("svg.site-interaction-layer");
+  const title = await page.locator("#hero-title").boundingBox();
+  const x = title!.x + title!.width / 2, y = title!.y + title!.height / 2;
+  await page.mouse.move(x - 24, y); await page.clock.runFor(80);
+  await page.mouse.move(x + 24, y); await page.clock.runFor(200);
+  await expect(svg).toHaveAttribute("data-trails", /[1-9]/);
+  await expect(overlay).toHaveCount(1);
+  await expect(overlay.locator("[data-aura]")).toHaveAttribute("visibility", "visible");
+  expect(Number(await overlay.locator("[data-aura]").getAttribute("opacity"))).toBeGreaterThan(0.1);
+  const geometry = await overlay.evaluate(el => ({ parent: el.parentElement?.tagName, z: Number(getComputedStyle(el).zIndex), events: getComputedStyle(el).pointerEvents, mask: getComputedStyle(el).maskImage, position: getComputedStyle(el).position }));
+  expect(geometry).toEqual({ parent: "BODY", z: 10, events: "none", mask: "none", position: "fixed" });
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; document.querySelector(".features")!.scrollIntoView(); });
+  await page.clock.runFor(250);
+  // Scrolling does not deactivate the stationary pointer or add document offsets.
+  await expect(overlay.locator("[data-aura]")).toHaveAttribute("transform", `translate(${(x + 24).toFixed(2)} ${y.toFixed(2)})`);
+  expect(Number(await overlay.locator("[data-aura]").getAttribute("opacity"))).toBeGreaterThan(0.1);
+  const card = await page.locator(".feature-card").first().boundingBox();
+  const cx = card!.x + card!.width / 2, cy = Math.max(180, Math.min(card!.y + 120, 600));
+  for (const px of [cx - 50, cx, cx + 50]) { await page.mouse.move(px, cy); await page.clock.runFor(100); }
+  expect(await overlay.locator('[data-trail][visibility="visible"]').count()).toBeGreaterThan(0);
+  expect(await overlay.locator('[data-response][visibility="visible"]').count()).toBeGreaterThan(0);
+  // A nearby probe really moves, rather than only changing a diagnostic counter.
+  const probe = overlay.locator('[data-response][visibility="visible"]').first();
+  const before = await probe.getAttribute("transform");
+  await page.mouse.move(cx + 10, cy + 35); await page.clock.runFor(450);
+  expect(await probe.getAttribute("transform")).not.toBe(before);
+  await page.mouse.click(card!.x + 8, card!.y + 8); await page.clock.runFor(200);
+  const crossing = overlay.locator('[data-wave][visibility="visible"]').first();
+  const circle = await crossing.locator("circle").first().boundingBox();
+  expect(circle!.x).toBeLessThan(card!.x);
+  expect(circle!.x + circle!.width).toBeGreaterThan(card!.x + 20);
+  // A card's overflow:hidden cannot clip a sibling viewport layer.
+  if (info.project.name === "desktop") await page.screenshot({ path: "artifacts/svg-reaction-card-dark.png" });
+  await page.mouse.move(8, 300); await page.mouse.click(8, 300); await page.clock.runFor(200);
+  await expect(overlay.locator('[data-wave][visibility="visible"]').last()).toHaveAttribute("transform", "translate(8 300)");
+  await page.mouse.move(-10, -10); await page.clock.runFor(4000);
+  await expect(overlay.locator("[data-aura]")).toHaveAttribute("visibility", "hidden");
+  await expect(overlay.locator("[data-orbit]").first()).toBeHidden();
+  expect(await overlay.locator('[data-response][visibility="visible"]').count()).toBe(0);
+});
+
+test("light-mode reading areas retain local reactions, short waves and idle fade without intercepting selection", async ({ page }, info) => {
+  test.setTimeout(60_000);
+  await animate(page);
+  await page.getByRole("button", { name: /Color theme:/ }).click();
+  await page.getByRole("radio", { name: "Light", exact: true }).check();
+  await page.keyboard.press("Escape");
+  await page.goto("/docs/installation/"); await page.clock.runFor(1800);
+  const overlay = page.locator("svg.site-interaction-layer");
+  const reading = page.locator(".docs-reading");
+  await reading.locator("p").first().scrollIntoViewIfNeeded();
+  const r = await reading.locator("p").first().boundingBox();
+  const x = r!.x + Math.min(r!.width / 2, 200), y = r!.y + 14;
+  await page.mouse.move(x - 25, y); await page.clock.runFor(100);
+  await page.mouse.move(x + 25, y); await page.clock.runFor(350);
+  await expect(overlay.locator("[data-aura]")).toHaveAttribute("visibility", "visible");
+  const hit = await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest(".docs-reading"), { x, y });
+  expect(hit).toBe(true);
+  if (info.project.name === "desktop") await page.screenshot({ path: "artifacts/svg-reaction-docs-light.png" });
+  // A stationary cursor decays, even while still over reading content.
+  await page.clock.runFor(4200);
+  await expect(overlay.locator("[data-aura]")).toHaveAttribute("visibility", "hidden");
+  await expect(overlay.locator("[data-orbit]").first()).toBeHidden();
+  await page.mouse.move(x, y); await page.clock.runFor(200);
+  await expect(overlay.locator("[data-aura]")).toHaveAttribute("visibility", "visible");
+  await page.mouse.move(x - 60, y); await page.mouse.down();
+  await page.mouse.move(x + 60, y, { steps: 8 }); await page.mouse.up();
+  expect(await page.evaluate(() => getSelection()?.toString().length ?? 0)).toBeGreaterThan(0);
+  await expect(field(page)).toHaveAttribute("data-ripples", "0");
+  await page.getByRole("button", { name: /Search documentation/ }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+});
 
 test("a single vector field fills marketing and documentation at mobile, desktop and 4K widths in both themes", async ({ page }, info) => {
   test.setTimeout(90_000);
@@ -78,9 +155,9 @@ test("the same SVG continues below the hero and through the footer, and visible 
   }
   await page.mouse.click(8, 300); await page.clock.runFor(250);
   await expect(svg).toHaveAttribute("data-ripples", "1");
-  const wave = svg.locator('[data-wave][visibility="visible"]').first();
+  const wave = page.locator('.site-interaction-layer [data-wave][visibility="visible"]').first();
   const radius = Number(await wave.locator("circle").first().getAttribute("r"));
-  expect(radius).toBeGreaterThan(10); expect(radius).toBeLessThan(205);
+  expect(radius).toBeGreaterThan(10); expect(radius).toBeLessThan(280);
   if (info.project.name === "desktop") await page.screenshot({ path: "artifacts/svg-footer-wave.png" });
 });
 
@@ -128,6 +205,7 @@ test("hidden and occluded vectors stop updating, pause persists into docs, and r
   expect(await invisible.getAttribute("transform")).toBe(transform);
   await page.getByRole("button", { name: "Pause animations", exact: true }).click();
   await expect(svg).toHaveAttribute("data-state", "paused"); await page.clock.runFor(100);
+  await expect(page.locator("svg.site-interaction-layer")).toBeHidden();
   const paused = await writes(); await page.clock.runFor(1000); expect(await writes()).toBe(paused);
   const docs = await context.newPage();
   await docs.emulateMedia({ reducedMotion: "no-preference" });

@@ -119,25 +119,35 @@ image URL in `src/lib/social-image.ts` can use the site's own HTTPS URL.
 
 ## Site-wide SVG atmosphere
 
-`SiteAtmosphere` is mounted once in the root layout, behind both the marketing
-site and all documentation pages. It replaces the previous hero-only Canvas.
+`SiteAtmosphere` is mounted once in the root layout on the marketing site and
+all documentation pages. Two fixed SVG siblings share one simulation: the calm
+ambient field behind content and a transparent interaction layer above content
+(z-index 10), below headers, menus and dialogs. Section overflow, isolation and
+panel backgrounds cannot clip or hide the interaction layer. Only the viewport
+clips either SVG; no full-screen mask, blur filter or blend mode is needed.
 Native SVG symbols, paths and circles form Ma'at feathers, scales, pyramids and
 heartbeat probes. Three continuous signal routes and depth-dependent scroll
 parallax keep the field coherent through every section and the footer.
 
-The SVG stays the size of the viewport instead of growing with the document.
+Each SVG stays the size of the viewport instead of growing with the document.
 A fixed pool of at most 112 units (28 on mobile) wraps outside the visible edges;
-hidden or occluded units receive no transform/opacity updates. Text, headers,
+hidden ambient units receive no transform/opacity updates. Text, headers,
 panels and the transparent logo have soft quiet zones. Normal content rectangles
 are cached in document coordinates; sticky elements are measured when scrolling.
 Colors inherit the shared gold/green theme variables, with lower light-mode
 opacity. No Canvas, raster backing store, animation library or dependency is added.
 
-Passive document listeners apply local distance-weighted influence. Taps produce
-three related verdict waves and short-lived sparks, capped at six waves and 54
+Passive document listeners track hover over text, cards and controls alike,
+using client coordinates that stay anchored during scrolling. Local attraction,
+repulsion and tangential drift, foreground glyph echoes, small
+orbiting probes and fading light trails make the reaction visible on panels
+without a rectangular reading-area mask. Hover fades after inactivity; mobile
+uses fewer probes and no simulated touch hover. Taps produce one of three
+verdict wave variants and short-lived sparks, capped at six waves and 54
 sparks (three and 18 on mobile). Nearby rapid taps merge. Controls, reading text,
-drags, cancelled touches and native scrolling never create background bursts.
-The decorative SVG cannot receive pointer or keyboard focus.
+drags, selected text, cancelled touches and native scrolling never create
+background bursts. Blank card areas can emit waves across card boundaries.
+Both decorative SVGs use pointer-events:none and cannot receive keyboard focus.
 
 Density, lifetimes, radii, parallax, quiet zones and frame rates are centralized in
 `src/lib/site-atmosphere.ts`. Elapsed-time motion runs outside React rendering.
