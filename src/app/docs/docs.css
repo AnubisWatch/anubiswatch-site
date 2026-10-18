@@ -131,6 +131,9 @@ kbd { font: .7rem var(--mono); color: var(--dim); border: 1px solid var(--line);
   .docs-reading { scroll-margin-top: 8rem; }
 }
 @media (max-width: 540px) {
+  .docs-site .docs-header-inner { gap: .5rem; }
+  .docs-site .docs-header .brand { font-size: 1rem; gap: .375rem; flex-shrink: 0; }
+  .docs-site .docs-header .brand img { width: 2rem; height: 2rem; flex-shrink: 0; }
   .docs-article-header h1 { font-size: 2.4rem; }
   .docs-article-header > p { font-size: 1rem; }
   .docs-start-cards { grid-template-columns: 1fr; }
@@ -149,9 +152,9 @@ kbd { font: .7rem var(--mono); color: var(--dim); border: 1px solid var(--line);
 
 /* Keep all header controls inside the shared gutter at narrow phone widths. */
 @media (max-width: 370px) {
-  .docs-site .docs-header-inner { gap: .25rem; }
-  .docs-site .docs-header .brand { font-size: 1rem; gap: .25rem; flex-shrink: 0; }
-  .docs-site .docs-header .brand img { width: 1.75rem; height: 1.75rem; flex-shrink: 0; }
-  .docs-site .docs-search-trigger { padding: .5rem; }
+  .docs-site .docs-header-inner { gap: .125rem; }
+  .docs-site .docs-header .brand { gap: .125rem; }
+  .docs-site .docs-header .brand img { width: 1.5rem; height: 1.5rem; }
+  .docs-site .docs-search-trigger { padding: .375rem; }
   .docs-site .docs-mobile-toggle { padding: .4rem; }
 }

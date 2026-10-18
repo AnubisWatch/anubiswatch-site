@@ -162,7 +162,7 @@ test("a single vector field fills marketing and documentation at mobile, desktop
         expect(result.position).toBe("fixed"); expect(result.events).toBe("none");
         expect(result.pool).toBeLessThanOrEqual(112); expect(result.active).toBeLessThanOrEqual(width < 700 ? 28 : 112);
         expect(result.refs).toBe(true); expect(result.overflow).toBe(false); expect(result.clipped).toEqual([]);
-        expect(result.brandOverlap).toBe(false);
+        expect(result.brandOverlap, `${route} ${theme} ${width}px`).toBe(false);
         if (info.project.name === "desktop" && width === 1440) await page.screenshot({ path: `artifacts/svg-${route === "/" ? "home" : "docs"}-${theme}-${width}.png` });
         if (info.project.name === "mobile" && route !== "/" && theme === "light" && width === 320) await page.screenshot({ path: "artifacts/svg-docs-light-320.png" });
       }

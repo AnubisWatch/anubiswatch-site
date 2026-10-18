@@ -21,6 +21,7 @@ test("the mouse toggle clears effects, detaches input and stops its loop without
   });
   await page.clock.install({ time: new Date("2030-01-01T00:00:00Z") });
   await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
   await expect(page.locator(field)).toHaveAttribute("data-probes", /\d+/);
   await page.clock.pauseAt(new Date("2030-01-01T01:00:00Z")); await page.clock.runFor(1800);
   const active = () => page.evaluate(() => window.backgroundSignals.filter(signal => !signal.aborted).length);
@@ -90,6 +91,10 @@ test("both headers keep the adjacent mouse button touchable at narrow and wide w
       expect(box!.width).toBeGreaterThanOrEqual(44); expect(box!.height).toBeGreaterThanOrEqual(44);
       expect(box!.x).toBeGreaterThanOrEqual(0); expect(box!.x + box!.width).toBeLessThanOrEqual(width);
       expect(await button.evaluate(el => el.nextElementSibling?.contains(document.querySelector('[aria-label^="Color theme:"]')))).toBe(true);
+      if (route !== "/") {
+        const overlap = await page.evaluate(() => document.querySelector(".docs-header .brand > span")!.getBoundingClientRect().right > document.querySelector(".docs-search-trigger")!.getBoundingClientRect().left + .5);
+        expect(overlap, `Documentation header at ${width}px`).toBe(false);
+      }
       expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
       if (info.project.name === "desktop" && width === 1440) await page.screenshot({ path: `artifacts/mouse-toggle-${route === "/" ? "home" : "docs"}.png` });
     }
