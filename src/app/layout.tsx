@@ -7,6 +7,7 @@ import "./svg-motion.css";
 import "./readability.css";
 import "./themes.css";
 import "./layout.css";
+import "./hero-atmosphere.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { socialImage, socialTwitter } from "@/lib/social-image";
 

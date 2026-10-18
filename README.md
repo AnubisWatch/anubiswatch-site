@@ -25,6 +25,8 @@ installation choices, clipboard success/failure, mobile navigation and FAQ.
 `npm run preview` serves the exported site locally on port 3000.
 Browser tests own a separate static server on port 4173 and never reuse a
 potentially unrelated preview server.
+Set `PLAYWRIGHT_PORT` to another free port when a different workspace is already
+using 4173; the test base URL and owned server change together.
 
 ## Deployment
 
@@ -114,6 +116,35 @@ While the custom domain's HTTPS certificate is pending, sharing metadata points
 to the public PNG on `raw.githubusercontent.com` so crawler image downloads
 use a valid HTTPS connection. Once the domain certificate is ready, the shared
 image URL in `src/lib/social-image.ts` can use the site's own HTTPS URL.
+
+## Hero atmosphere
+
+`HeroAtmosphere` adds a full-viewport Canvas 2D field around the existing SVG
+guardian, while hero content retains the shared layout. Ma'at feathers, scales,
+probe heartbeats and orbital signal routes form the scene. A soft mask lowers
+detail behind the copy and fades objects and waves at every edge.
+
+Passive pointer listeners apply a local, distance-weighted influence. Background
+taps produce three related verdict-wave patterns and short-lived signal sparks;
+nearby rapid taps merge, with at most six waves and 64 sparks (three and 24 on
+mobile). Text and controls are excluded. Drags, touch cancellation and native
+scrolling do not trigger waves; the canvas never takes pointer or keyboard focus.
+
+All density, lifetime, radius, frame-rate, pixel-budget and palette settings live
+in `src/lib/hero-atmosphere.ts`. No dependencies are added. The field uses seeded
+positions, elapsed-time movement and no React state updates per frame. It lowers
+activity when idle and stops its requestAnimationFrame loop when manually paused,
+outside the viewport or in a hidden tab. Resume resets the frame timestamp.
+Reduced motion renders a static composition without interaction bursts. Both
+theme palettes update through the existing appearance menu. ResizeObserver
+measures the actual hero, DPR is capped at 1.75 and the backing store at roughly
+4.5 million pixels; mobile uses 30 objects and fewer connections. Every listener,
+observer and scheduled frame is cleaned up on unmount.
+
+Hero tests cover actual canvas drawing and suspension, effect limits and expiry,
+native mobile scrolling, control isolation, persisted pause, reduced motion,
+both themes and full-width rendering up to 3840px. The shared layout suite also
+checks 375, 768, 1024, 1440, 1920 and 2560px.
 
 ## Embedded documentation
 
