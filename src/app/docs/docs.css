@@ -149,5 +149,9 @@ kbd { font: .7rem var(--mono); color: var(--dim); border: 1px solid var(--line);
 
 /* Keep all header controls inside the shared gutter at narrow phone widths. */
 @media (max-width: 370px) {
-  .docs-site .docs-header-inner { gap: .3rem; }
+  .docs-site .docs-header-inner { gap: .25rem; }
+  .docs-site .docs-header .brand { font-size: 1rem; gap: .25rem; flex-shrink: 0; }
+  .docs-site .docs-header .brand img { width: 1.75rem; height: 1.75rem; flex-shrink: 0; }
+  .docs-site .docs-search-trigger { padding: .5rem; }
+  .docs-site .docs-mobile-toggle { padding: .4rem; }
 }

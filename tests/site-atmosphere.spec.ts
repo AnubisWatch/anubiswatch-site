@@ -43,13 +43,17 @@ test("a single vector field fills marketing and documentation at mobile, desktop
         const result = await field(page).evaluate(svg => {
           const box = svg.getBoundingClientRect();
           const uses = [...svg.querySelectorAll("use")];
-          return { width: box.width, top: box.top, left: box.left, position: getComputedStyle(svg).position, events: getComputedStyle(svg).pointerEvents, pool: uses.length, active: Number(svg.dataset.probes), visible: Number(svg.dataset.visible), refs: uses.every(use => !!document.getElementById(use.getAttribute("href")!.slice(1))), overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth, clipped: [...document.querySelectorAll("header button,header a")].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.left < 0 || r.right > document.documentElement.clientWidth + 1); }).map(el => el.className) };
+          const brand = document.querySelector(".docs-header .brand > span"), search = document.querySelector(".docs-search-trigger");
+          const brandOverlap = !!(brand && search && brand.getBoundingClientRect().right > search.getBoundingClientRect().left + 0.5);
+          return { width: box.width, top: box.top, left: box.left, position: getComputedStyle(svg).position, events: getComputedStyle(svg).pointerEvents, pool: uses.length, active: Number(svg.dataset.probes), visible: Number(svg.dataset.visible), refs: uses.every(use => !!document.getElementById(use.getAttribute("href")!.slice(1))), brandOverlap, overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth, clipped: [...document.querySelectorAll("header button,header a")].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.left < 0 || r.right > document.documentElement.clientWidth + 1); }).map(el => el.className) };
         });
         expect(result.width).toBe(width); expect(result.top).toBe(0); expect(result.left).toBe(0);
         expect(result.position).toBe("fixed"); expect(result.events).toBe("none");
         expect(result.pool).toBeLessThanOrEqual(112); expect(result.active).toBeLessThanOrEqual(width < 700 ? 28 : 112);
         expect(result.refs).toBe(true); expect(result.overflow).toBe(false); expect(result.clipped).toEqual([]);
+        expect(result.brandOverlap).toBe(false);
         if (info.project.name === "desktop" && width === 1440) await page.screenshot({ path: `artifacts/svg-${route === "/" ? "home" : "docs"}-${theme}-${width}.png` });
+        if (info.project.name === "mobile" && route !== "/" && theme === "light" && width === 320) await page.screenshot({ path: "artifacts/svg-docs-light-320.png" });
       }
     }
   }
