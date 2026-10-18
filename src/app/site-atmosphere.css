@@ -15,6 +15,8 @@
 .site-interaction-layer .field-trails { stroke-width: 1.6; }
 .site-interaction-layer .field-sparks { stroke-width: 1.4; }
 .field-aura { stroke: var(--gold); stroke-width: 1; }
+.field-relays { stroke: var(--green); stroke-width: .85; stroke-linecap: round; }
+.field-relays circle { fill: var(--gold); stroke: none; }
 .field-waves [data-variant="1"] { stroke: var(--green); }
 [data-theme="light"] :is(.site-atmosphere, .site-interaction-layer) { --field-opacity: .72; }
 .hero-stage { position: relative; isolation: isolate; }

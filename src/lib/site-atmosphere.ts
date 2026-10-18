@@ -14,6 +14,7 @@ export const siteAtmosphere = {
   displacement: 68,
   responseOpacity: 0.38,
   orbitProbes: 8,
+  chain: { max: 24, mobile: 8, budget: 12, mobileBudget: 5, seeds: 2, radius: 225, mobileRadius: 185, generations: 2, fanout: 2, attenuation: 0.62, life: 0.65, kick: 105 },
   entrance: 1.5,
   quietFade: 72,
   edgeFade: 65,

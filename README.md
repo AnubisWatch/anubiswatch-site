@@ -149,6 +149,15 @@ drags, selected text, cancelled touches and native scrolling never create
 background bursts. Blank card areas can emit waves across card boundaries.
 Both decorative SVGs use pointer-events:none and cannot receive keyboard focus.
 
+Probe offsets use damped springs with substeps, cursor momentum and local eddies.
+The cursor companions follow drifting elliptical paths at different speeds and
+lags. A verdict wave can seed two shapes, which relay attenuated energy through
+two neighbour generations. Each burst visits at most 12 shapes (five on mobile),
+and at most 24 relay paths (eight on mobile) can exist globally. Neighbours are
+searched on hits only; no all-pairs neighbour scan runs each frame. Relays and
+small resonance halos fade quickly, without raising the existing opacity limits.
+The DOM-free physics live in `src/lib/atmosphere-dynamics.ts`.
+
 Density, lifetimes, radii, parallax, quiet zones and frame rates are centralized in
 `src/lib/site-atmosphere.ts`. Elapsed-time motion runs outside React rendering.
 Idle activity drops; the loop stops when hidden, outside the viewport or paused,

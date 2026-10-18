@@ -3,10 +3,11 @@
 import { useEffect, useId, useRef } from "react";
 import { useMotionControl } from "./motion-control";
 import { siteAtmosphere as config } from "@/lib/site-atmosphere";
+import { PulseNetwork, stepFlow, type Cascade, type FlowBody } from "@/lib/atmosphere-dynamics";
 
 type Point = { x: number; y: number };
-type Unit = Point & { el: SVGGElement; response: SVGGElement; phase: number; depth: number; dx: number; dy: number; px: number; py: number; alpha: number; visible: boolean };
-type Ripple = Point & { age: number; variant: number; energy: number };
+type Unit = Point & FlowBody & { el: SVGGElement; response: SVGGElement; resonance: SVGCircleElement; pulse: number; phase: number; depth: number; px: number; py: number; alpha: number; visible: boolean };
+type Ripple = Point & { age: number; variant: number; energy: number; cascade: Cascade };
 type Spark = Point & { age: number; vx: number; vy: number };
 type Trail = Point & { age: number };
 type Zone = { left: number; right: number; top: number; bottom: number; floor: number };
@@ -36,6 +37,9 @@ export function SiteAtmosphere() {
     const responses = [...overlay.querySelectorAll<SVGGElement>("[data-response]")];
     const aura = overlay.querySelector<SVGGElement>("[data-aura]")!;
     const orbitElements = [...aura.querySelectorAll<SVGGElement>("[data-orbit]")];
+    const contours = [...aura.querySelectorAll<SVGPathElement>("[data-contour]")];
+    const relayElements = [...overlay.querySelectorAll<SVGGElement>("[data-relay]")].map(el => ({ el, path: el.querySelector("path")!, dot: el.querySelector("circle")! }));
+    const orbits = orbitElements.map((_, i) => ({ angle: i * tau / config.orbitProbes, x: 0, y: 0, ready: false }));
     const waveElements = [...overlay.querySelectorAll<SVGGElement>("[data-wave]")];
     const sparkElements = [...overlay.querySelectorAll<SVGPathElement>("[data-spark]")];
     const trailElements = [...overlay.querySelectorAll<SVGPathElement>("[data-trail]")];
@@ -47,9 +51,10 @@ export function SiteAtmosphere() {
     let entrance: number = pausedRef.current ? config.entrance : 0, activity: number = config.idleStrength;
     let scroll = window.scrollY, sceneScroll = scroll, measured = false, scrollDirty = true;
     let units: Unit[] = [], waves: Ripple[] = [], sparks: Spark[] = [], trails: Trail[] = [];
+    let network = new PulseNetwork({ ...config.chain, max: config.chain.max });
     let zones: Zone[] = [], floating: Element[] = [], activeZones: Zone[] = [];
     let down: (Point & { id: number; at: number; scroll: number; moved: boolean }) | null = null;
-    const pointer = { x: 0, y: 0, strength: 0, active: false };
+    const pointer = { x: 0, y: 0, strength: 0, active: false, vx: 0, vy: 0, movedAt: -10 };
     const state = () => reduced ? "reduced" : pausedRef.current ? "paused" : hidden ? "hidden" : !visible ? "offscreen" : time - lastActivity > config.idleAfter ? "idle" : "running";
     const counts = () => { attr(svg, "data-ripples", waves.length); attr(svg, "data-sparks", sparks.length); attr(svg, "data-trails", trails.length); };
     const stop = () => { if (frame) cancelAnimationFrame(frame); frame = 0; previous = 0; };
@@ -93,10 +98,7 @@ export function SiteAtmosphere() {
         const y = wrap(unit.y * span - sceneScroll * config.parallax * unit.depth, span) - config.overscan + Math.cos(ambient * 0.15 + unit.phase) * config.drift;
         const dx = x - pointer.x, dy = y - pointer.y, distance = Math.hypot(dx, dy);
         const proximity = (1 - clamp(distance / config.pointerRadius)) ** 2;
-        const influence = proximity * config.displacement * pointer.strength * unit.depth;
-        const swirl = Math.sin(ambient * 1.3 + unit.phase) * 0.55;
-        const radial = 0.35 + Math.sin(unit.phase) * 0.9;
-        let tx = (dx * radial - dy * swirl) / Math.max(1, distance) * influence, ty = (dy * radial + dx * swirl) / Math.max(1, distance) * influence;
+        let tx = 0, ty = 0;
         let waveLight = 0;
         for (const wave of waves) {
           const wx = x - wave.x, wy = y - wave.y, d = Math.hypot(wx, wy), p = wave.age / config.ripples.life;
@@ -106,25 +108,59 @@ export function SiteAtmosphere() {
           waveLight = Math.max(waveLight, envelope);
           tx += wx / Math.max(1, d) * force; ty += wy / Math.max(1, d) * force;
         }
-        if (dt) { unit.dx += (tx - unit.dx) * smooth; unit.dy += (ty - unit.dy) * smooth; }
+        stepFlow(unit, x, y, unit.phase, unit.depth, pointer, dt, config.pointerRadius, config.displacement * (0.65 + unit.depth * 0.35), tx, ty);
+        if (dt) unit.pulse *= Math.exp(-dt * 4.8);
         unit.px = x + unit.dx; unit.py = y + unit.dy;
         const edge = clamp(Math.min(unit.px, width - unit.px, unit.py, height - unit.py) / config.edgeFade);
         const target = (0.19 + unit.depth * 0.27) * edge * quiet(unit.px, unit.py) * intro * (0.7 + activity * 0.3);
         unit.alpha += (target - unit.alpha) * smooth;
         const show = unit.py > -25 && unit.py < height + 25 && unit.alpha > 0.008;
         if (show !== unit.visible) { attr(unit.el, "visibility", show ? "visible" : "hidden"); attr(unit.el, "data-visible", String(show)); unit.visible = show; }
-        const transform = `translate(${unit.px.toFixed(2)} ${unit.py.toFixed(2)}) rotate(${(Math.sin(ambient * 0.12 + unit.phase) * 12 + unit.phase * 12).toFixed(2)})`;
+        const transform = `translate(${unit.px.toFixed(2)} ${unit.py.toFixed(2)}) rotate(${(Math.sin(ambient * 0.12 + unit.phase) * 12 + unit.phase * 12 + unit.turn * 30 + unit.pulse * 12).toFixed(2)})`;
         if (show) {
           showing++;
           attr(unit.el, "transform", transform);
           attr(unit.el, "opacity", unit.alpha.toFixed(3));
         }
         // Foreground echoes use radial distance only: no card/text rectangle masks.
-        const response = Math.min(1, proximity * pointer.strength * 1.8 + waveLight) * config.responseOpacity * edge * intro;
+        const response = Math.min(1, proximity * pointer.strength * 1.8 + waveLight + unit.pulse) * config.responseOpacity * edge * intro;
         const showResponse = reacting && response > 0.008;
         attr(unit.response, "visibility", showResponse ? "visible" : "hidden");
-        if (showResponse) { attr(unit.response, "transform", transform); attr(unit.response, "opacity", response.toFixed(3)); }
+        if (showResponse) {
+          attr(unit.response, "transform", transform); attr(unit.response, "opacity", response.toFixed(3));
+          attr(unit.resonance, "r", (9 + (1 - unit.pulse) * 21).toFixed(2));
+          attr(unit.resonance, "opacity", (unit.pulse * 0.65).toFixed(3));
+        }
       }
+      if (dt && reacting) {
+        network.step(dt, units, (index, energy, from) => {
+          const unit = units[index], source = units[from];
+          unit.pulse = Math.max(unit.pulse, energy);
+          const dx = unit.px - source.px, dy = unit.py - source.py, distance = Math.max(1, Math.hypot(dx, dy));
+          unit.vx += (dx - dy * 0.2) / distance * energy * config.chain.kick;
+          unit.vy += (dy + dx * 0.2) / distance * energy * config.chain.kick;
+        });
+        for (const wave of waves) {
+          if (wave.cascade.seeds >= config.chain.seeds) continue;
+          const radius = (mobile ? config.ripples.mobileRadius : config.ripples.radius) * (1 - (1 - wave.age / config.ripples.life) ** 2);
+          for (let i = 0; i < units.length; i++) {
+            const unit = units[i], distance = Math.hypot(unit.px - wave.x, unit.py - wave.y);
+            if (unit.py < 20 || unit.py > height - 20 || Math.abs(distance - radius) > 22) continue;
+            if (network.seed(wave.cascade, i, units)) unit.pulse = Math.max(unit.pulse, 0.9);
+          }
+        }
+      }
+      relayElements.forEach(({ el, path, dot }, i) => {
+        const relay = network.relays[i], a = relay && units[relay.from], b = relay && units[relay.to];
+        const show = !!(reacting && relay && a && b && Math.hypot(a.px - b.px, a.py - b.py) < config.chain.radius * 1.5);
+        attr(el, "visibility", show ? "visible" : "hidden"); if (!show) return;
+        const t = clamp(relay.age / relay.delay), u = 1 - t;
+        const cx = (a.px + b.px) / 2 + (b.py - a.py) * 0.13, cy = (a.py + b.py) / 2 - (b.px - a.px) * 0.13;
+        attr(path, "d", `M${a.px.toFixed(1)} ${a.py.toFixed(1)}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${b.px.toFixed(1)} ${b.py.toFixed(1)}`);
+        attr(el, "opacity", (relay.energy * Math.min(1, relay.age * 20) * (1 - clamp((relay.age - relay.delay) / config.chain.life)) * 0.38 * intro).toFixed(3));
+        attr(dot, "cx", (u * u * a.px + 2 * u * t * cx + t * t * b.px).toFixed(1));
+        attr(dot, "cy", (u * u * a.py + 2 * u * t * cy + t * t * b.py).toFixed(1));
+      });
       attr(svg!, "data-visible", showing);
       let wires = 0;
       const linkLimit = mobile ? config.links.mobile : config.links.max;
@@ -152,13 +188,28 @@ export function SiteAtmosphere() {
       if (auraVisible) {
         attr(aura, "transform", `translate(${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)})`);
         attr(aura, "opacity", (pointer.strength * intro * 0.52).toFixed(3));
+        contours.forEach((path, lane) => {
+          const radius = lane ? 106 : 42;
+          const points = Array.from({ length: 6 }, (_, i) => {
+            const angle = i * tau / 6 + ambient * 0.1;
+            const r = radius * (1 + Math.sin(ambient * 0.7 + i * 1.7 + lane) * 0.12);
+            return { x: Math.cos(angle) * r, y: Math.sin(angle) * r * (0.86 + Math.sin(ambient * 0.3 + lane) * 0.06) };
+          });
+          const mid = (a: Point, b: Point) => `${((a.x + b.x) / 2).toFixed(1)} ${((a.y + b.y) / 2).toFixed(1)}`;
+          attr(path, "d", `M${mid(points[5], points[0])}${points.map((p, i) => `Q${p.x.toFixed(1)} ${p.y.toFixed(1)} ${mid(p, points[(i + 1) % 6])}`).join("")}Z`);
+        });
         orbitElements.forEach((el, i) => {
           const show = !mobile || i < 3;
           attr(el, "visibility", show ? "visible" : "hidden");
           if (!show) return;
-          const angle = i * tau / config.orbitProbes + ambient * (i % 2 ? 0.24 : -0.18);
-          const radius = 65 + i % 3 * 31 + Math.sin(ambient * 1.5 + i) * 12;
-          attr(el, "transform", `translate(${(Math.cos(angle) * radius).toFixed(2)} ${(Math.sin(angle) * radius).toFixed(2)}) rotate(${(angle * 180 / Math.PI).toFixed(1)})`);
+          const orbit = orbits[i];
+          orbit.angle += dt * (0.3 + Math.sin(ambient * 0.65 + i) * 0.12);
+          const radius = 65 + i % 3 * 31 + Math.sin(ambient * 0.85 + i * 1.7) * 17;
+          const x = Math.cos(orbit.angle) * radius * (1 + Math.sin(ambient * 0.4 + i) * 0.12) - pointer.vx * (0.012 + i * 0.002);
+          const y = Math.sin(orbit.angle) * radius * (0.8 + Math.cos(ambient * 0.35 + i) * 0.12) - pointer.vy * (0.012 + i * 0.002);
+          const lag = !orbit.ready ? 1 : 1 - Math.exp(-dt * (5 + i % 3));
+          orbit.x += (x - orbit.x) * lag; orbit.y += (y - orbit.y) * lag; orbit.ready = true;
+          attr(el, "transform", `translate(${orbit.x.toFixed(2)} ${orbit.y.toFixed(2)}) rotate(${(orbit.angle * 180 / Math.PI + 90).toFixed(1)})`);
         });
       }
       waveElements.forEach((group, i) => {
@@ -194,6 +245,7 @@ export function SiteAtmosphere() {
       const elapsed = previous ? (timestamp - previous) / 1000 : 1 / fps;
       if (elapsed + 0.0001 < 1 / fps) { frame = requestAnimationFrame(tick); return; }
       const dt = Math.min(elapsed, 0.05); previous = timestamp; time += dt; entrance += dt;
+      pointer.vx *= Math.exp(-dt * 7); pointer.vy *= Math.exp(-dt * 7);
       const smooth = 1 - Math.exp(-dt * 6);
       activity += ((time - lastActivity > config.idleAfter ? config.idleStrength : 1) - activity) * smooth;
       pointer.strength += ((pointer.active && time - lastActivity < config.idleAfter ? 1 : 0) - pointer.strength) * smooth;
@@ -227,11 +279,13 @@ export function SiteAtmosphere() {
         width = w; height = h; mobile = width < config.mobileWidth;
         attr(svg!, "viewBox", `0 0 ${width} ${height}`);
         attr(overlay!, "viewBox", `0 0 ${width} ${height}`);
+        network = new PulseNetwork({ ...config.chain, max: mobile ? config.chain.mobile : config.chain.max, budget: mobile ? config.chain.mobileBudget : config.chain.budget, radius: mobile ? config.chain.mobileRadius : config.chain.radius });
+        waves = []; sparks = []; trails = []; counts();
         let seed: number = config.seed;
         const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
         const count = mobile ? config.units.mobile : clamp(Math.round(width * height / config.densityArea), config.units.min, config.units.max);
         const columns = Math.max(3, Math.round(Math.sqrt(count * width / height))), rows = Math.ceil(count / columns);
-        units = unitElements.slice(0, count).map((el, i) => ({ el, response: responses[i], x: ((i % columns) + 0.12 + random() * 0.76) / columns, y: (Math.floor(i / columns) + 0.1 + random() * 0.8) / rows, phase: random() * tau, depth: 0.3 + random() * 0.7, dx: 0, dy: 0, px: 0, py: 0, alpha: 0, visible: false }));
+        units = unitElements.slice(0, count).map((el, i) => ({ el, response: responses[i], resonance: responses[i].querySelector("circle")!, pulse: 0, x: ((i % columns) + 0.12 + random() * 0.76) / columns, y: (Math.floor(i / columns) + 0.1 + random() * 0.8) / rows, phase: random() * tau, depth: 0.3 + random() * 0.7, dx: 0, dy: 0, vx: 0, vy: 0, turn: 0, px: 0, py: 0, alpha: 0, visible: false }));
         unitElements.forEach((el, i) => { attr(el, "visibility", "hidden"); attr(el, "data-visible", "false"); attr(el, "data-active", String(i < count)); });
         responses.forEach(el => attr(el, "visibility", "hidden"));
         attr(svg!, "data-probes", count);
@@ -244,6 +298,9 @@ export function SiteAtmosphere() {
       if (down && down.id === event.pointerId && Math.hypot(event.clientX - down.x, event.clientY - down.y) > config.tap.distance) down.moved = true;
       if (event.pointerType === "touch" || !interactive()) return;
       // Hit testing only gates bursts. Hover follows the document, including text/cards.
+      const elapsed = Math.max(1 / 60, time - pointer.movedAt);
+      if (pointer.active) { pointer.vx = clamp((event.clientX - pointer.x) / elapsed, -650, 650); pointer.vy = clamp((event.clientY - pointer.y) / elapsed, -650, 650); }
+      pointer.movedAt = time;
       pointer.x = event.clientX; pointer.y = event.clientY; pointer.active = true; lastActivity = time;
       const last = trails.at(-1);
       if (pointer.active && time - lastTrail > 0.035 && (!last || Math.hypot(pointer.x - last.x, pointer.y - last.y) > config.trails.spacing)) {
@@ -262,7 +319,7 @@ export function SiteAtmosphere() {
       const oldActivity = lastActivity; lastActivity = time;
       const nearby = waves.find(wave => wave.age < 0.22 && Math.hypot(wave.x - x, wave.y - y) < 45);
       if (nearby) nearby.energy = Math.min(1.4, nearby.energy + 0.15);
-      else waves.push({ x, y, age: 0, energy: 1, variant: (Math.floor(x / 180) + Math.floor(y / 180) + (time - oldActivity < 0.4 ? 1 : 0)) % 3 });
+      else waves.push({ x, y, age: 0, energy: 1, cascade: network.create(), variant: (Math.floor(x / 180) + Math.floor(y / 180) + (time - oldActivity < 0.4 ? 1 : 0)) % 3 });
       waves = waves.slice(-(mobile ? config.ripples.mobile : config.ripples.max));
       for (let i = 0; i < config.sparks.perTap; i++) { const angle = tau * i / config.sparks.perTap + time; sparks.push({ x, y, age: 0, vx: Math.cos(angle) * (110 + i * 8), vy: Math.sin(angle) * (110 + i * 8) }); }
       sparks = sparks.slice(-(mobile ? config.sparks.mobile : config.sparks.max)); counts();
@@ -274,7 +331,7 @@ export function SiteAtmosphere() {
     window.addEventListener("scroll", () => { scroll = window.scrollY; scrollDirty = true; if (pointer.active) lastActivity = time; invalidate(); }, passive);
     window.addEventListener("resize", resize, passive);
     document.addEventListener("visibilitychange", () => { hidden = document.hidden; down = null; pointer.active = false; sync(); }, { signal: abort.signal });
-    media.addEventListener("change", () => { reduced = media.matches; waves = []; sparks = []; trails = []; pointer.active = false; pointer.strength = 0; counts(); sync(); }, { signal: abort.signal });
+    media.addEventListener("change", () => { reduced = media.matches; waves = []; sparks = []; trails = []; network.clear(); units.forEach(unit => { unit.pulse = 0; }); pointer.active = false; pointer.strength = 0; counts(); sync(); }, { signal: abort.signal });
     const theme = () => { attr(svg, "data-theme", document.documentElement.dataset.theme ?? "dark"); invalidate(); };
     const themeObserver = new MutationObserver(theme); themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     const contentObserver = new MutationObserver(() => { measured = false; invalidate(); }); contentObserver.observe(document.body, { childList: true, subtree: true });
@@ -298,9 +355,10 @@ export function SiteAtmosphere() {
     <g className="field-wires">{Array.from({ length: config.links.max }, (_, i) => <path key={i} data-wire="" opacity="0" />)}</g>
     <g>{Array.from({ length: config.units.max }, (_, i) => <g key={i} data-unit={i} visibility="hidden" className={i % 4 === 0 ? "field-soul" : "field-glyph"}><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x={-(7 + i % 7)} y={-(7 + i % 7)} width={14 + i % 7 * 2} height={14 + i % 7 * 2} /></g>)}</g>
   </svg><svg ref={interactionRef} className="site-interaction-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none" visibility="hidden">
-    <g>{Array.from({ length: config.units.max }, (_, i) => <g key={i} data-response={i} visibility="hidden" className={i % 4 === 0 ? "field-soul" : "field-glyph"}><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x={-12} y={-12} width={24} height={24} /></g>)}</g>
+    <g>{Array.from({ length: config.units.max }, (_, i) => <g key={i} data-response={i} visibility="hidden" className={i % 4 === 0 ? "field-soul" : "field-glyph"}><circle data-resonance="" opacity="0" /><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x={-12} y={-12} width={24} height={24} /></g>)}</g>
+    <g className="field-relays">{Array.from({ length: config.chain.max }, (_, i) => <g key={i} data-relay="" visibility="hidden"><path /><circle r="1.8" /></g>)}</g>
     <g data-aura="" className="field-aura" visibility="hidden">
-      <circle r="38" opacity=".18" /><circle r="108" opacity=".08" />
+      <path data-contour="" opacity=".18" /><path data-contour="" opacity=".08" />
       <path d="M-58-17A61 61 0 0 1-18-58M58 17A61 61 0 0 1 18 58" opacity=".65" />
       {Array.from({ length: config.orbitProbes }, (_, i) => <g key={i} data-orbit="" className={i % 2 ? "field-soul" : "field-glyph"}><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x="-7" y="-7" width="14" height="14" /></g>)}
     </g>

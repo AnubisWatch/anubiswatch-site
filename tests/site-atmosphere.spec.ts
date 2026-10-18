@@ -20,6 +20,40 @@ async function animate(page: Page) {
   await page.clock.runFor(1800);
 }
 
+test("organic cursor companions drift while verdict energy travels through bounded neighbour relays", async ({ page }, info) => {
+  await animate(page);
+  const overlay = page.locator(".site-interaction-layer");
+  await page.mouse.move(160, 330); await page.clock.runFor(300);
+  const companion = overlay.locator("[data-orbit]").first();
+  const initial = await companion.getAttribute("transform");
+  await page.clock.runFor(700);
+  expect(await companion.getAttribute("transform")).not.toBe(initial);
+  const y = await field(page).locator('[data-unit][visibility="visible"]').evaluateAll(nodes => {
+    const near = nodes.map(node => node.getBoundingClientRect()).filter(r => r.x < 180 && r.y > 180 && r.y < innerHeight - 100).sort((a, b) => a.x - b.x)[0];
+    if (!near) throw new Error("No visible probe near the page margin");
+    return near.y + near.height / 2;
+  });
+  await page.mouse.click(8, y);
+  let peak = 0, resonance = 0, linkOpacity = 0;
+  for (let i = 0; i < 18; i++) {
+    await page.clock.runFor(80);
+    const active = overlay.locator('[data-relay][visibility="visible"]');
+    const count = await active.count(); peak = Math.max(peak, count);
+    resonance = Math.max(resonance, await overlay.locator("[data-resonance]").evaluateAll(nodes => Math.max(...nodes.map(n => Number(n.getAttribute("opacity"))))));
+    if (count) {
+      expect(await active.first().locator("path").getAttribute("d")).toMatch(/^M.+Q/);
+      linkOpacity = Math.max(linkOpacity, Number(await active.first().getAttribute("opacity")));
+      if (info.project.name === "desktop" && i === 7) await page.screenshot({ path: "artifacts/svg-organic-cascade.png" });
+    }
+  }
+  expect(peak).toBeGreaterThan(0); expect(peak).toBeLessThanOrEqual(info.project.name === "mobile" ? 8 : 24);
+  expect(resonance).toBeGreaterThan(0.05);
+  expect(linkOpacity).toBeGreaterThan(0.02);
+  await page.mouse.move(-10, -10); await page.clock.runFor(4500);
+  expect(await overlay.locator('[data-relay][visibility="visible"]').count()).toBe(0);
+  expect(await overlay.locator('[data-response][visibility="visible"]').count()).toBe(0);
+});
+
 test("pointer reactions cross text and clipped cards above content, with viewport coordinates during scroll", async ({ page }, info) => {
   test.setTimeout(60_000);
   await animate(page);
