@@ -52,8 +52,8 @@ try {
   const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
   await page.setContent(html);
   await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: path.join(root, "public/images/anubiswatch-og-v2.png"), type: "png" });
-  console.log("Generated public/images/anubiswatch-og-v2.png (1200 × 630)");
+  await page.screenshot({ path: path.join(root, "public/og.png"), type: "png" });
+  console.log("Generated public/og.png (1200 × 630)");
 } finally {
   await browser.close();
 }

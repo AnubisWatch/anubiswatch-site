@@ -2,7 +2,7 @@
 export const socialImage = {
   // The custom domain's Pages certificate is pending. Keep crawler downloads
   // on a verified HTTPS host; the same PNG is also available in the site export.
-  url: "https://raw.githubusercontent.com/AnubisWatch/anubiswatch-site/main/public/images/anubiswatch-og-v2.png",
+  url: "https://raw.githubusercontent.com/AnubisWatch/anubiswatch-site/main/public/og.png",
   width: 1200,
   height: 630,
   type: "image/png",

@@ -22,7 +22,7 @@ test("static pages expose a fetchable social image and route-specific sharing ti
         twitterTitle: content('meta[name="twitter:title"]'),
       };
     }, await response.text());
-    expect(meta.og, route).toEqual(["https://raw.githubusercontent.com/AnubisWatch/anubiswatch-site/main/public/images/anubiswatch-og-v2.png"]);
+    expect(meta.og, route).toEqual(["https://raw.githubusercontent.com/AnubisWatch/anubiswatch-site/main/public/og.png"]);
     expect(meta.twitter, route).toEqual(meta.og);
     expect(meta.width, route).toEqual(["1200"]);
     expect(meta.height, route).toEqual(["630"]);
@@ -32,7 +32,7 @@ test("static pages expose a fetchable social image and route-specific sharing ti
     expect(meta.twitterTitle, route).toEqual(meta.title);
     if (route.startsWith("/docs/")) expect(meta.title[0], route).not.toBe("AnubisWatch — The Judgment Never Sleeps");
   }
-  const image = await request.get("/images/anubiswatch-og-v2.png");
+  const image = await request.get("/og.png");
   expect(image.ok()).toBe(true);
   expect(image.headers()["content-type"]).toContain("image/png");
   const bytes = await image.body();

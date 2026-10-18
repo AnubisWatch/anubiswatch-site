@@ -98,7 +98,7 @@ Official reference: [GitHub custom-domain documentation](https://docs.github.com
 
 ## Social sharing image
 
-`public/images/anubiswatch-og-v2.png` is the 1200 × 630 Open Graph and Twitter
+`public/og.png` (served at `/og.png`) is the 1200 × 630 Open Graph and Twitter
 card shared by the homepage and all documentation pages. It uses the existing
 SVG logo and bundled fonts, with a simplified message for small previews.
 Page metadata explicitly includes the image because Next.js replaces nested
