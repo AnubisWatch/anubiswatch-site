@@ -8,17 +8,16 @@ import { docCatalog, docGroups, docHref } from "@/lib/docs-catalog";
 import { DocsSearch } from "./docs-search";
 import { OxogStudio } from "./oxog-studio";
 import { ThemeToggle } from "./theme-provider";
-import { MotionToggle, useMotionControl } from "./motion-control";
+import { MotionToggle } from "./motion-control";
 
 export function DocsShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [paused] = useMotionControl();
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   function navigation(mobile = false) {
     return <nav aria-label={mobile ? "Mobile documentation" : "Documentation sidebar"}>{docGroups.map((group) => <div className="docs-nav-group" key={group}><h2>{group}</h2>{docCatalog.filter((doc) => doc.group === group).map((doc) => <a key={doc.slug} href={docHref(doc.slug)} aria-current={pathname.replace(/\/$/, "") === docHref(doc.slug).replace(/\/$/, "") ? "page" : undefined} onClick={() => setMobileOpen(false)}>{doc.title}</a>)}</div>)}</nav>;
   }
-  return <div className="docs-site" data-motion-paused={paused}>
+  return <div className="docs-site">
     <a className="skip-link" href="#docs-main">Skip to documentation</a>
     <header className="docs-header"><div className="docs-container docs-header-inner"><a href="/" className="brand" aria-label="AnubisWatch home"><img src="/images/anubis-logo.svg" width="44" height="44" alt="" /><span>Anubis<span className="brand-light">Watch</span></span></a><span className="docs-header-label"><BookOpen size={16} />DOCUMENTATION</span><DocsSearch /><MotionToggle /><ThemeToggle /><a className="docs-source-link" href="https://github.com/AnubisWatch/AnubisWatch">GitHub <ArrowUpRight size={15} /></a><button className="docs-mobile-toggle" aria-label={mobileOpen ? "Close documentation menu" : "Open documentation menu"} aria-controls="docs-mobile-menu" aria-expanded={mobileOpen} onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X size={22} /> : <Menu size={22} />}</button></div></header>
     <div className="docs-mobile-bar"><span><BookOpen size={15} /> Documentation</span><button onClick={() => setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen} aria-controls="docs-mobile-menu">Browse guides <ChevronDown size={15} /></button></div>

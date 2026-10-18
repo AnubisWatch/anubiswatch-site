@@ -22,6 +22,9 @@
 .hero-stage { position: relative; isolation: isolate; }
 .hero-stage .guardian { z-index: 1; }
 .hero-stage .hero::before { display: none; }
-.docs-site[data-motion-paused="true"] *, .docs-site[data-motion-paused="true"] *::before, .docs-site[data-motion-paused="true"] *::after { animation-play-state: paused !important; }
-@media (prefers-reduced-motion: reduce) { .site-interaction-layer { display: none; } }
+.background-toggle { display: grid; place-items: center; min-width: 44px; width: 44px; min-height: 44px; height: 44px; padding: 0; flex-shrink: 0; border: 1px solid var(--line); border-radius: .625rem; color: var(--gold); background: color-mix(in oklch, var(--gold) 5%, transparent); touch-action: manipulation; }
+.background-toggle[aria-pressed="false"] { color: var(--dim); background: transparent; }
+.background-toggle[aria-pressed="false"] svg { opacity: .6; }
+.background-toggle:hover, .background-toggle:focus-visible { color: var(--gold); border-color: var(--gold); }
+@media (prefers-reduced-motion: reduce) { .site-interaction-layer:not([data-enabled="true"]) { display: none; } }
 @media print { .site-atmosphere, .site-interaction-layer { display: none; } }

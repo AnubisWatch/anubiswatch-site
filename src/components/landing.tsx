@@ -6,8 +6,8 @@ import { useMotionPreference } from "@/components/use-motion-preference";
 import { DocsHub } from "@/components/docs-hub";
 import { OxogStudio } from "@/components/oxog-studio";
 import { ThemeToggle } from "@/components/theme-provider";
-import { useMotionControl } from "@/components/motion-control";
-import { Activity, ArrowDown, ArrowRight, ArrowUpRight, Bell, Check, CheckCheck, ChevronDown, Code2, Copy, Crown, Feather, Gavel, Globe2, HeartPulse, Layers3, Mail, Menu, Network, Pause, Play, Radio, Scale, ScrollText, Server, ShieldCheck, Terminal, TriangleAlert, X, Zap, type LucideIcon } from "lucide-react";
+import { MotionToggle } from "@/components/motion-control";
+import { Activity, ArrowDown, ArrowRight, ArrowUpRight, Bell, Check, CheckCheck, ChevronDown, Code2, Copy, Crown, Feather, Gavel, Globe2, HeartPulse, Layers3, Mail, Menu, Network, Radio, Scale, ScrollText, Server, ShieldCheck, Terminal, TriangleAlert, X, Zap, type LucideIcon } from "lucide-react";
 import { BinaryCore, CelestialField, ClusterGlobe, DataRail, DispatchSignal, JudgmentScales, ProtocolSignal, WingedDisc } from "@/components/animated-art";
 import { channels, DOCS, installCommands, protocols, questions, RELEASES, REPO, steps } from "@/lib/content";
 
@@ -143,7 +143,6 @@ export function Landing() {
   const [protocol, setProtocol] = useState(0);
   const [step, setStep] = useState(0);
   const [scrolled, setScrolled] = useState(false);
-  const [paused, setPaused] = useMotionControl();
   const reduced = useMotionPreference();
   useEffect(() => {
     const root = document.getElementById("top");
@@ -158,10 +157,6 @@ export function Landing() {
     regions.forEach((region) => observer?.observe(region));
     return () => { observer?.disconnect(); document.removeEventListener("visibilitychange", visibility); };
   }, []);
-  function toggleMotion() {
-    const next = !paused;
-    setPaused(next);
-  }
   const selectedProtocol = protocols[protocol];
   const ProtocolIcon = icons[selectedProtocol.icon];
   const selectedStep = steps[step];
@@ -178,9 +173,9 @@ export function Landing() {
     document.addEventListener("keydown", key);
     return () => document.removeEventListener("keydown", key);
   }, [menu]);
-  return <MotionConfig reducedMotion={paused || reduced ? "always" : "never"}><div id="top" data-motion-paused={paused} className={reduced ? "site reduce-motion" : "site"}>
+  return <MotionConfig reducedMotion={reduced ? "always" : "never"}><div id="top" className={reduced ? "site reduce-motion" : "site"}>
     <a href="#main" className="skip-link">Skip to content</a>
-    <header className={"site-header " + (scrolled ? "scrolled" : "")}><div className="header-inner"><Brand /><span className="header-caption">THE GUARDIAN OF UPTIME</span><nav className="desktop-nav" aria-label="Main navigation"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href={DOCS + "/"}>Docs <ArrowUpRight size={12} /></a></nav><button className="motion-toggle" onClick={toggleMotion} aria-pressed={paused} disabled={!!reduced} aria-label={reduced ? "Motion reduced by device settings" : paused ? "Resume animations" : "Pause animations"} title={reduced ? "Your device requests reduced motion" : paused ? "Resume animations" : "Pause animations"}>{paused || reduced ? <Play size={13} /> : <Pause size={13} />}<span>Motion</span></button><ThemeToggle /><a className="header-github" href={REPO}><Github size={16} /><span>GitHub</span><ArrowUpRight size={13} /></a><a className="button button-small header-start" href="#get-started">Get started <ArrowRight size={14} /></a><button id="menu-toggle" className="menu-toggle" aria-expanded={menu} aria-controls="mobile-nav" aria-label={menu ? "Close navigation" : "Open navigation"} onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button></div>{menu && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"><a onClick={() => setMenu(false)} href="#platform">Platform</a><a onClick={() => setMenu(false)} href="#how-it-works">How it works</a><a href={DOCS + "/"}>Documentation <ArrowUpRight size={16} /></a><a href="#get-started" onClick={() => setMenu(false)}>Get started <ArrowRight size={16} /></a></nav>}</header>
+    <header className={"site-header " + (scrolled ? "scrolled" : "")}><div className="header-inner"><Brand /><span className="header-caption">THE GUARDIAN OF UPTIME</span><nav className="desktop-nav" aria-label="Main navigation"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href={DOCS + "/"}>Docs <ArrowUpRight size={12} /></a></nav><MotionToggle /><ThemeToggle /><a className="header-github" href={REPO}><Github size={16} /><span>GitHub</span><ArrowUpRight size={13} /></a><a className="button button-small header-start" href="#get-started">Get started <ArrowRight size={14} /></a><button id="menu-toggle" className="menu-toggle" aria-expanded={menu} aria-controls="mobile-nav" aria-label={menu ? "Close navigation" : "Open navigation"} onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button></div>{menu && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"><a onClick={() => setMenu(false)} href="#platform">Platform</a><a onClick={() => setMenu(false)} href="#how-it-works">How it works</a><a href={DOCS + "/"}>Documentation <ArrowUpRight size={16} /></a><a href="#get-started" onClick={() => setMenu(false)}>Get started <ArrowRight size={16} /></a></nav>}</header>
     <main id="main">
       <div className="hero-stage">
       <section className="hero section-shell" aria-labelledby="hero-title">

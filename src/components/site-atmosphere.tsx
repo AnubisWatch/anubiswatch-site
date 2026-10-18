@@ -24,13 +24,12 @@ export function SiteAtmosphere() {
   const id = useId().replace(/:/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
   const interactionRef = useRef<SVGSVGElement>(null);
-  const [paused] = useMotionControl();
-  const pausedRef = useRef(paused);
-  const syncRef = useRef<(() => void) | null>(null);
+  const [paused, , automatic] = useMotionControl();
 
   useEffect(() => {
     const svg = svgRef.current, overlay = interactionRef.current;
     if (!svg || !overlay) return;
+    attr(overlay, "visibility", "hidden");
     const abort = new AbortController(), passive = { passive: true, signal: abort.signal };
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const unitElements = [...svg.querySelectorAll<SVGGElement>("[data-unit]")];
@@ -46,16 +45,17 @@ export function SiteAtmosphere() {
     const wireElements = [...svg.querySelectorAll<SVGPathElement>("[data-wire]")];
     const routes = [...svg.querySelectorAll<SVGPathElement>("[data-route]")];
     const packets = [...svg.querySelectorAll<SVGCircleElement>("[data-packet]")];
-    let width = 1, height = 1, mobile = false, visible = false, hidden = document.hidden, reduced = media.matches;
+    let width = 1, height = 1, mobile = false, visible = false, hidden = document.hidden;
+    const reduced = automatic && media.matches;
     let frame = 0, previous = 0, time = 0, ambient = 0, lastActivity = -10, lastTrail = -10;
-    let entrance: number = pausedRef.current ? config.entrance : 0, activity: number = config.idleStrength;
+    let entrance: number = paused ? config.entrance : 0, activity: number = config.idleStrength;
     let scroll = window.scrollY, sceneScroll = scroll, measured = false, scrollDirty = true;
     let units: Unit[] = [], waves: Ripple[] = [], sparks: Spark[] = [], trails: Trail[] = [];
     let network = new PulseNetwork({ ...config.chain, max: config.chain.max });
     let zones: Zone[] = [], floating: Element[] = [], activeZones: Zone[] = [];
     let down: (Point & { id: number; at: number; scroll: number; moved: boolean }) | null = null;
     const pointer = { x: 0, y: 0, strength: 0, active: false, vx: 0, vy: 0, movedAt: -10 };
-    const state = () => reduced ? "reduced" : pausedRef.current ? "paused" : hidden ? "hidden" : !visible ? "offscreen" : time - lastActivity > config.idleAfter ? "idle" : "running";
+    const state = () => reduced ? "reduced" : paused ? "paused" : hidden ? "hidden" : !visible ? "offscreen" : time - lastActivity > config.idleAfter ? "idle" : "running";
     const counts = () => { attr(svg, "data-ripples", waves.length); attr(svg, "data-sparks", sparks.length); attr(svg, "data-trails", trails.length); };
     const stop = () => { if (frame) cancelAnimationFrame(frame); frame = 0; previous = 0; };
     function measure() {
@@ -90,7 +90,7 @@ export function SiteAtmosphere() {
       const intro = reduced ? 1 : clamp(entrance / config.entrance);
       const smooth = dt ? 1 - Math.exp(-dt * 9) : 1;
       const span = height + config.overscan * 2;
-      const reacting = !reduced && !pausedRef.current;
+      const reacting = !reduced && !paused;
       attr(overlay!, "visibility", reacting ? "visible" : "hidden");
       let showing = 0;
       for (const unit of units) {
@@ -259,13 +259,12 @@ export function SiteAtmosphere() {
       attr(svg!, "data-state", state()); draw(dt); frame = requestAnimationFrame(tick);
     }
     function sync() {
-      stop(); if (pausedRef.current && entrance < 0.1) entrance = config.entrance;
+      stop(); if (paused && entrance < 0.1) entrance = config.entrance;
       attr(svg!, "data-state", state());
       if (!visible || hidden) return;
-      if (reduced || pausedRef.current) { draw(); return; }
+      if (reduced || paused) { draw(); return; }
       frame = requestAnimationFrame(tick);
     }
-    syncRef.current = sync;
     function invalidate() {
       if (!visible || hidden || frame) return;
       // Static compositions redraw only for layout/scroll changes, never on a loop.
@@ -292,7 +291,7 @@ export function SiteAtmosphere() {
       }
       measured = false; sync();
     }
-    const interactive = () => !reduced && !pausedRef.current && visible && !hidden;
+    const interactive = () => !reduced && !paused && visible && !hidden;
     const excluded = (target: EventTarget | null) => target instanceof Element && !!target.closest(config.controlSelector);
     function move(event: PointerEvent) {
       if (down && down.id === event.pointerId && Math.hypot(event.clientX - down.x, event.clientY - down.y) > config.tap.distance) down.moved = true;
@@ -324,25 +323,33 @@ export function SiteAtmosphere() {
       for (let i = 0; i < config.sparks.perTap; i++) { const angle = tau * i / config.sparks.perTap + time; sparks.push({ x, y, age: 0, vx: Math.cos(angle) * (110 + i * 8), vy: Math.sin(angle) * (110 + i * 8) }); }
       sparks = sparks.slice(-(mobile ? config.sparks.mobile : config.sparks.max)); counts();
     }
-    document.addEventListener("pointermove", move, { ...passive, capture: true }); document.addEventListener("pointerdown", press, passive); document.addEventListener("pointerup", release, passive);
-    document.addEventListener("pointercancel", () => { down = null; pointer.active = false; }, passive);
-    document.addEventListener("pointerout", event => { if (!event.relatedTarget) { pointer.active = false; down = null; } }, passive);
-    window.addEventListener("blur", () => { pointer.active = false; down = null; }, passive);
-    window.addEventListener("scroll", () => { scroll = window.scrollY; scrollDirty = true; if (pointer.active) lastActivity = time; invalidate(); }, passive);
-    window.addEventListener("resize", resize, passive);
-    document.addEventListener("visibilitychange", () => { hidden = document.hidden; down = null; pointer.active = false; sync(); }, { signal: abort.signal });
-    media.addEventListener("change", () => { reduced = media.matches; waves = []; sparks = []; trails = []; network.clear(); units.forEach(unit => { unit.pulse = 0; }); pointer.active = false; pointer.strength = 0; counts(); sync(); }, { signal: abort.signal });
+    // Only an enabled field owns input/scroll/visibility listeners. Toggling the
+    // preference tears down this effect, aborts them and starts with empty pools.
+    if (!paused && !reduced) {
+      document.addEventListener("pointermove", move, { ...passive, capture: true }); document.addEventListener("pointerdown", press, passive); document.addEventListener("pointerup", release, passive);
+      document.addEventListener("pointercancel", () => { down = null; pointer.active = false; }, passive);
+      document.addEventListener("pointerout", event => { if (!event.relatedTarget) { pointer.active = false; down = null; } }, passive);
+      window.addEventListener("blur", () => { pointer.active = false; down = null; }, passive);
+      window.addEventListener("scroll", () => { scroll = window.scrollY; scrollDirty = true; if (pointer.active) lastActivity = time; invalidate(); }, passive);
+      window.addEventListener("resize", resize, passive);
+      document.addEventListener("visibilitychange", () => { hidden = document.hidden; down = null; pointer.active = false; sync(); }, { signal: abort.signal });
+    }
     const theme = () => { attr(svg, "data-theme", document.documentElement.dataset.theme ?? "dark"); invalidate(); };
     const themeObserver = new MutationObserver(theme); themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     const contentObserver = new MutationObserver(() => { measured = false; invalidate(); }); contentObserver.observe(document.body, { childList: true, subtree: true });
-    const sizeObserver = new ResizeObserver(() => { measured = false; invalidate(); }); sizeObserver.observe(document.body);
+    // Static artwork may still adapt to layout/theme changes without input
+    // listeners or a continuous animation loop.
+    const sizeObserver = new ResizeObserver(() => {
+      const box = svg.getBoundingClientRect();
+      if (Math.round(box.width) !== width || Math.round(box.height) !== height) resize();
+      else { measured = false; invalidate(); }
+    }); sizeObserver.observe(document.body); sizeObserver.observe(svg);
     const intersection = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); }); intersection.observe(svg);
     void document.fonts.ready.then(() => { if (!abort.signal.aborted) { measured = false; invalidate(); } });
     theme(); resize(); counts();
-    return () => { stop(); abort.abort(); themeObserver.disconnect(); contentObserver.disconnect(); sizeObserver.disconnect(); intersection.disconnect(); syncRef.current = null; };
-  }, []);
+    return () => { stop(); abort.abort(); themeObserver.disconnect(); contentObserver.disconnect(); sizeObserver.disconnect(); intersection.disconnect(); network.clear(); };
+  }, [paused, automatic]);
 
-  useEffect(() => { pausedRef.current = paused; syncRef.current?.(); }, [paused]);
   return <><svg ref={svgRef} className="site-atmosphere" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none">
     <defs>
       <symbol id={id + "-soul"} viewBox="-16 -16 32 32"><circle r="8" /><path d="M-16 0H-5L-1-7 4 7 8 0H16" /></symbol>
@@ -354,7 +361,7 @@ export function SiteAtmosphere() {
     <g className="field-signal">{Array.from({ length: 3 }, (_, i) => <circle key={i} data-packet="" r="2" opacity="0" />)}</g>
     <g className="field-wires">{Array.from({ length: config.links.max }, (_, i) => <path key={i} data-wire="" opacity="0" />)}</g>
     <g>{Array.from({ length: config.units.max }, (_, i) => <g key={i} data-unit={i} visibility="hidden" className={i % 4 === 0 ? "field-soul" : "field-glyph"}><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x={-(7 + i % 7)} y={-(7 + i % 7)} width={14 + i % 7 * 2} height={14 + i % 7 * 2} /></g>)}</g>
-  </svg><svg ref={interactionRef} className="site-interaction-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none" visibility="hidden">
+  </svg><svg ref={interactionRef} className="site-interaction-layer" data-enabled={!paused} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none" visibility="hidden">
     <g>{Array.from({ length: config.units.max }, (_, i) => <g key={i} data-response={i} visibility="hidden" className={i % 4 === 0 ? "field-soul" : "field-glyph"}><circle data-resonance="" opacity="0" /><use href={"#" + id + "-" + ["soul", "feather", "pyramid", "scales"][i % 4]} x={-12} y={-12} width={24} height={24} /></g>)}</g>
     <g className="field-relays">{Array.from({ length: config.chain.max }, (_, i) => <g key={i} data-relay="" visibility="hidden"><path /><circle r="1.8" /></g>)}</g>
     <g data-aura="" className="field-aura" visibility="hidden">

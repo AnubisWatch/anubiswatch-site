@@ -163,8 +163,15 @@ Density, lifetimes, radii, parallax, quiet zones and frame rates are centralized
 Idle activity drops; the loop stops when hidden, outside the viewport or paused,
 and resumes with a fresh timestamp. Reduced motion uses a static composition
 that redraws only for layout changes. Every observer, listener and frame is
-cleaned up on unmount. The shared motion store persists choices across routes
-and tabs, supports unavailable storage, and drives controls in both headers.
+cleaned up on unmount. The mouse icon beside the theme picker controls only this
+background, independently of illustrated artwork or content transitions. Turning
+it off clears transient effects, aborts input listeners and cancels the loop;
+read-only layout/theme observers keep the static composition responsive.
+The shared store uses `anubiswatch-background-motion` in localStorage, follows
+reduced motion until an explicit choice, and synchronizes both headers and tabs.
+Users can explicitly opt in even with reduced motion; blocked storage retains a
+session-only choice. Its pressed state means enabled, and its Turkish accessible
+label/tooltip describes the next action: “Animasyonları kapat” or “Animasyonları aç”.
 
 Tests cover SVG symbol references, bounded pools, section/footer continuity,
 actual vector changes and suspension, invisible units, effect expiry, native

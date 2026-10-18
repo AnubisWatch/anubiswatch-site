@@ -150,4 +150,4 @@
   .oxog-projects { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .oxog-stroke { animation: none !important; stroke-dashoffset: 0 !important; } }
-.site[data-motion-paused="true"] .oxog-stroke, .reduce-motion .oxog-stroke { stroke-dashoffset: 0 !important; }
+.reduce-motion .oxog-stroke { stroke-dashoffset: 0 !important; }

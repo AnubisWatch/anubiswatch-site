@@ -112,19 +112,20 @@ test("FAQ expands and navigation reaches the installation section", async ({ pag
   await expect(page.locator("details[open]")).toContainText("feather of Ma’at");
 });
 
-test("SVG motion pauses offscreen, remembers the manual choice and respects device preferences", async ({ page }) => {
+test("background control stays scoped while illustrated artwork follows visibility and device preferences", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   const sweep = page.locator(".celestial-sweep");
   const beam = page.locator(".balance-beam");
   await expect(sweep).toHaveCSS("animation-play-state", "running");
   await expect(beam).toHaveCSS("animation-play-state", "paused");
-  await page.getByRole("button", { name: "Pause animations", exact: true }).click();
-  await expect(sweep).toHaveCSS("animation-play-state", "paused");
+  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
+  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "paused");
+  await expect(sweep).toHaveCSS("animation-play-state", "running");
   await page.reload();
-  await expect(page.getByRole("button", { name: "Resume animations", exact: true })).toHaveAttribute("aria-pressed", "true");
-  await expect(sweep).toHaveCSS("animation-play-state", "paused");
-  await page.getByRole("button", { name: "Resume animations", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Animasyonları aç", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(sweep).toHaveCSS("animation-play-state", "running");
+  await page.getByRole("button", { name: "Animasyonları aç", exact: true }).click();
   await expect(sweep).toHaveCSS("animation-play-state", "running");
   await page.evaluate(() => {
     Object.defineProperty(document, "hidden", { configurable: true, value: true });
@@ -141,7 +142,9 @@ test("SVG motion pauses offscreen, remembers the manual choice and respects devi
   await expect(sweep).toHaveCSS("animation-play-state", "paused");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(beam).toHaveCSS("animation-name", "none");
-  await expect(page.getByRole("button", { name: "Motion reduced by device settings" })).toBeDisabled();
+  await page.evaluate(() => { localStorage.removeItem("anubiswatch-background-motion"); window.dispatchEvent(new StorageEvent("storage", { key: "anubiswatch-background-motion" })); });
+  await expect(page.getByRole("button", { name: "Animasyonları aç" })).toBeEnabled();
+  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "reduced");
 });
 
 test("motion controls still work when browser storage is unavailable", async ({ page }) => {
@@ -153,9 +156,11 @@ test("motion controls still work when browser storage is unavailable", async ({ 
     Storage.prototype.setItem = () => { throw new Error("Storage unavailable"); };
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Pause animations", exact: true }).click();
-  await expect(page.locator(".celestial-sweep")).toHaveCSS("animation-play-state", "paused");
-  await page.getByRole("button", { name: "Resume animations", exact: true }).click();
+  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
+  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "paused");
+  await expect(page.locator(".celestial-sweep")).toHaveCSS("animation-play-state", "running");
+  await page.getByRole("button", { name: "Animasyonları aç", exact: true }).click();
+  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", /running|idle/);
   await expect(page.locator(".celestial-sweep")).toHaveCSS("animation-play-state", "running");
   expect(errors).toEqual([]);
 });

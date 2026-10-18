@@ -237,7 +237,7 @@ test("hidden and occluded vectors stop updating, pause persists into docs, and r
   expect(await invisible.count()).toBe(1);
   const transform = await invisible.getAttribute("transform"); await page.clock.runFor(200);
   expect(await invisible.getAttribute("transform")).toBe(transform);
-  await page.getByRole("button", { name: "Pause animations", exact: true }).click();
+  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
   await expect(svg).toHaveAttribute("data-state", "paused"); await page.clock.runFor(100);
   await expect(page.locator("svg.site-interaction-layer")).toBeHidden();
   const paused = await writes(); await page.clock.runFor(1000); expect(await writes()).toBe(paused);
@@ -245,8 +245,8 @@ test("hidden and occluded vectors stop updating, pause persists into docs, and r
   await docs.emulateMedia({ reducedMotion: "no-preference" });
   await docs.goto("/docs/installation/");
   await expect(field(docs)).toHaveAttribute("data-state", "paused");
-  await docs.getByRole("button", { name: "Resume animations", exact: true }).click();
-  await expect(page.locator("#top")).toHaveAttribute("data-motion-paused", "false");
+  await docs.getByRole("button", { name: "Animasyonları aç", exact: true }).click();
+  await expect(svg).toHaveAttribute("data-state", /running|idle/);
   await docs.close(); await page.bringToFront(); await page.clock.runFor(250);
   await page.mouse.click(8, 200); await page.clock.runFor(100);
   await page.evaluate(() => { Object.defineProperty(document, "hidden", { configurable: true, value: true }); document.dispatchEvent(new Event("visibilitychange")); });
@@ -254,12 +254,13 @@ test("hidden and occluded vectors stop updating, pause persists into docs, and r
   const hidden = await writes(); await page.clock.runFor(60_000); expect(await writes()).toBe(hidden);
   await page.evaluate(() => { Reflect.deleteProperty(document, "hidden"); document.dispatchEvent(new Event("visibilitychange")); });
   await page.clock.runFor(200); await expect(svg).toHaveAttribute("data-ripples", "1");
+  await page.evaluate(() => { localStorage.removeItem("anubiswatch-background-motion"); window.dispatchEvent(new StorageEvent("storage", { key: "anubiswatch-background-motion" })); });
   await page.emulateMedia({ reducedMotion: "reduce" }); await expect(svg).toHaveAttribute("data-state", "reduced"); await page.clock.runFor(100);
   const reduced = await writes(); await page.clock.runFor(1000); expect(await writes()).toBe(reduced);
   await page.mouse.click(8, 220); await expect(svg).toHaveAttribute("data-ripples", "0");
   await page.emulateMedia({ reducedMotion: "no-preference" }); await page.clock.runFor(300); expect(await writes()).toBeGreaterThan(reduced);
   // A quota/read-only failure must not undo the user's current-session choice.
   await page.evaluate(() => { Storage.prototype.setItem = () => { throw new Error("Read-only storage"); }; });
-  await page.getByRole("button", { name: "Pause animations", exact: true }).click();
+  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
   await expect(svg).toHaveAttribute("data-state", "paused");
 });
