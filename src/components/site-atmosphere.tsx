@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import { useMotionControl } from "./motion-control";
+import { useMotionPreference } from "./use-motion-preference";
 import { siteAtmosphere as config } from "@/lib/site-atmosphere";
 import { PulseNetwork, stepFlow, type Cascade, type FlowBody } from "@/lib/atmosphere-dynamics";
 
@@ -24,14 +25,15 @@ export function SiteAtmosphere() {
   const id = useId().replace(/:/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
   const interactionRef = useRef<SVGSVGElement>(null);
-  const [paused, , automatic] = useMotionControl();
+  const [paused] = useMotionControl();
+  const deviceReduced = useMotionPreference();
+  const ambientClock = useRef({ time: 0, entrance: 0 });
 
   useEffect(() => {
     const svg = svgRef.current, overlay = interactionRef.current;
     if (!svg || !overlay) return;
     attr(overlay, "visibility", "hidden");
     const abort = new AbortController(), passive = { passive: true, signal: abort.signal };
-    const media = matchMedia("(prefers-reduced-motion: reduce)");
     const unitElements = [...svg.querySelectorAll<SVGGElement>("[data-unit]")];
     const responses = [...overlay.querySelectorAll<SVGGElement>("[data-response]")];
     const aura = overlay.querySelector<SVGGElement>("[data-aura]")!;
@@ -46,16 +48,16 @@ export function SiteAtmosphere() {
     const routes = [...svg.querySelectorAll<SVGPathElement>("[data-route]")];
     const packets = [...svg.querySelectorAll<SVGCircleElement>("[data-packet]")];
     let width = 1, height = 1, mobile = false, visible = false, hidden = document.hidden;
-    const reduced = automatic && media.matches;
-    let frame = 0, previous = 0, time = 0, ambient = 0, lastActivity = -10, lastTrail = -10;
-    let entrance: number = paused ? config.entrance : 0, activity: number = config.idleStrength;
+    const reduced = deviceReduced && paused;
+    let frame = 0, previous = 0, time = 0, ambient = ambientClock.current.time, lastActivity = -10, lastTrail = -10;
+    let entrance = ambientClock.current.entrance, activity: number = config.idleStrength;
     let scroll = window.scrollY, sceneScroll = scroll, measured = false, scrollDirty = true;
     let units: Unit[] = [], waves: Ripple[] = [], sparks: Spark[] = [], trails: Trail[] = [];
     let network = new PulseNetwork({ ...config.chain, max: config.chain.max });
     let zones: Zone[] = [], floating: Element[] = [], activeZones: Zone[] = [];
     let down: (Point & { id: number; at: number; scroll: number; moved: boolean }) | null = null;
     const pointer = { x: 0, y: 0, strength: 0, active: false, vx: 0, vy: 0, movedAt: -10 };
-    const state = () => reduced ? "reduced" : paused ? "paused" : hidden ? "hidden" : !visible ? "offscreen" : time - lastActivity > config.idleAfter ? "idle" : "running";
+    const state = () => hidden ? "hidden" : !visible ? "offscreen" : reduced ? "reduced" : paused ? "ambient" : time - lastActivity > config.idleAfter ? "idle" : "running";
     const counts = () => { attr(svg, "data-ripples", waves.length); attr(svg, "data-sparks", sparks.length); attr(svg, "data-trails", trails.length); };
     const stop = () => { if (frame) cancelAnimationFrame(frame); frame = 0; previous = 0; };
     function measure() {
@@ -87,10 +89,10 @@ export function SiteAtmosphere() {
     }
     function draw(dt = 0) {
       viewportZones();
-      const intro = reduced ? 1 : clamp(entrance / config.entrance);
+      const intro = deviceReduced ? 1 : clamp(entrance / config.entrance);
       const smooth = dt ? 1 - Math.exp(-dt * 9) : 1;
       const span = height + config.overscan * 2;
-      const reacting = !reduced && !paused;
+      const reacting = !paused;
       attr(overlay!, "visibility", reacting ? "visible" : "hidden");
       let showing = 0;
       for (const unit of units) {
@@ -249,7 +251,8 @@ export function SiteAtmosphere() {
       const smooth = 1 - Math.exp(-dt * 6);
       activity += ((time - lastActivity > config.idleAfter ? config.idleStrength : 1) - activity) * smooth;
       pointer.strength += ((pointer.active && time - lastActivity < config.idleAfter ? 1 : 0) - pointer.strength) * smooth;
-      ambient += dt * (0.5 + activity * 0.5); sceneScroll += (scroll - sceneScroll) * smooth;
+      if (!deviceReduced) ambient += dt * (0.5 + activity * 0.5);
+      sceneScroll += (scroll - sceneScroll) * (deviceReduced ? 1 : smooth);
       const before = waves.length + sparks.length + trails.length;
       for (const wave of waves) wave.age += dt;
       for (const trail of trails) trail.age += dt;
@@ -259,10 +262,10 @@ export function SiteAtmosphere() {
       attr(svg!, "data-state", state()); draw(dt); frame = requestAnimationFrame(tick);
     }
     function sync() {
-      stop(); if (paused && entrance < 0.1) entrance = config.entrance;
+      stop();
       attr(svg!, "data-state", state());
       if (!visible || hidden) return;
-      if (reduced || paused) { draw(); return; }
+      if (reduced) { draw(); return; }
       frame = requestAnimationFrame(tick);
     }
     function invalidate() {
@@ -291,7 +294,7 @@ export function SiteAtmosphere() {
       }
       measured = false; sync();
     }
-    const interactive = () => !reduced && !paused && visible && !hidden;
+    const interactive = () => !paused && visible && !hidden;
     const excluded = (target: EventTarget | null) => target instanceof Element && !!target.closest(config.controlSelector);
     function move(event: PointerEvent) {
       if (down && down.id === event.pointerId && Math.hypot(event.clientX - down.x, event.clientY - down.y) > config.tap.distance) down.moved = true;
@@ -323,17 +326,17 @@ export function SiteAtmosphere() {
       for (let i = 0; i < config.sparks.perTap; i++) { const angle = tau * i / config.sparks.perTap + time; sparks.push({ x, y, age: 0, vx: Math.cos(angle) * (110 + i * 8), vy: Math.sin(angle) * (110 + i * 8) }); }
       sparks = sparks.slice(-(mobile ? config.sparks.mobile : config.sparks.max)); counts();
     }
-    // Only an enabled field owns input/scroll/visibility listeners. Toggling the
-    // preference tears down this effect, aborts them and starts with empty pools.
-    if (!paused && !reduced) {
+    // Only mouse effects own pointer listeners. Ambient motion retains its
+    // layout/visibility lifecycle while toggling clears all interaction pools.
+    if (!paused) {
       document.addEventListener("pointermove", move, { ...passive, capture: true }); document.addEventListener("pointerdown", press, passive); document.addEventListener("pointerup", release, passive);
       document.addEventListener("pointercancel", () => { down = null; pointer.active = false; }, passive);
       document.addEventListener("pointerout", event => { if (!event.relatedTarget) { pointer.active = false; down = null; } }, passive);
       window.addEventListener("blur", () => { pointer.active = false; down = null; }, passive);
-      window.addEventListener("scroll", () => { scroll = window.scrollY; scrollDirty = true; if (pointer.active) lastActivity = time; invalidate(); }, passive);
-      window.addEventListener("resize", resize, passive);
-      document.addEventListener("visibilitychange", () => { hidden = document.hidden; down = null; pointer.active = false; sync(); }, { signal: abort.signal });
     }
+    window.addEventListener("scroll", () => { scroll = window.scrollY; scrollDirty = true; if (pointer.active) lastActivity = time; invalidate(); }, passive);
+    window.addEventListener("resize", resize, passive);
+    document.addEventListener("visibilitychange", () => { hidden = document.hidden; down = null; pointer.active = false; sync(); }, { signal: abort.signal });
     const theme = () => { attr(svg, "data-theme", document.documentElement.dataset.theme ?? "dark"); invalidate(); };
     const themeObserver = new MutationObserver(theme); themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     const contentObserver = new MutationObserver(() => { measured = false; invalidate(); }); contentObserver.observe(document.body, { childList: true, subtree: true });
@@ -347,8 +350,11 @@ export function SiteAtmosphere() {
     const intersection = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); }); intersection.observe(svg);
     void document.fonts.ready.then(() => { if (!abort.signal.aborted) { measured = false; invalidate(); } });
     theme(); resize(); counts();
-    return () => { stop(); abort.abort(); themeObserver.disconnect(); contentObserver.disconnect(); sizeObserver.disconnect(); intersection.disconnect(); network.clear(); };
-  }, [paused, automatic]);
+    return () => {
+      ambientClock.current = { time: ambient, entrance };
+      stop(); abort.abort(); themeObserver.disconnect(); contentObserver.disconnect(); sizeObserver.disconnect(); intersection.disconnect(); network.clear();
+    };
+  }, [paused, deviceReduced]);
 
   return <><svg ref={svgRef} className="site-atmosphere" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" aria-hidden="true" focusable="false" fill="none">
     <defs>

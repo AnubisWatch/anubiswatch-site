@@ -160,22 +160,25 @@ The DOM-free physics live in `src/lib/atmosphere-dynamics.ts`.
 
 Density, lifetimes, radii, parallax, quiet zones and frame rates are centralized in
 `src/lib/site-atmosphere.ts`. Elapsed-time motion runs outside React rendering.
-Idle activity drops; the loop stops when hidden, outside the viewport or paused,
-and resumes with a fresh timestamp. Reduced motion uses a static composition
-that redraws only for layout changes. Every observer, listener and frame is
-cleaned up on unmount. The mouse icon beside the theme picker controls only this
-background, independently of illustrated artwork or content transitions. Turning
-it off clears transient effects, aborts input listeners and cancels the loop;
-read-only layout/theme observers keep the static composition responsive.
+Idle activity drops; the loop stops when hidden or outside the viewport,
+and resumes with a fresh timestamp. Device reduced motion keeps ambient artwork
+static, redrawing only for layout changes. Every observer, listener and frame is
+cleaned up on unmount. The mouse icon beside the theme picker controls only
+cursor and click effects. Turning it off clears transient effects and aborts
+pointer listeners; ambient shapes, signal routes, illustrated artwork and content
+transitions continue. Ambient motion keeps its phase across toggles, and retains
+scroll, resize and visibility handling independently of mouse effects.
 The shared store uses `anubiswatch-background-motion` in localStorage, follows
 reduced motion until an explicit choice, and synchronizes both headers and tabs.
-Users can explicitly opt in even with reduced motion; blocked storage retains a
-session-only choice. Its pressed state means enabled, and its Turkish accessible
-label/tooltip describes the next action: “Animasyonları kapat” or “Animasyonları aç”.
+Users can explicitly opt into mouse effects even with reduced motion, while
+ambient motion still respects the device preference. Blocked storage retains a
+session-only choice. Its pressed state means mouse effects are enabled, and its
+English accessible label/tooltip describes the next action: “Disable mouse effects”
+or “Enable mouse effects”.
 
 Tests cover SVG symbol references, bounded pools, section/footer continuity,
 actual vector changes and suspension, invisible units, effect expiry, native
-mobile scrolling, control isolation, cross-page pause, reduced motion, both
+mobile scrolling, control isolation, cross-page mouse preference, reduced motion, both
 themes and widths up to 3840px. Shared layout tests additionally check 375, 768,
 1024, 1440, 1920 and 2560px.
 

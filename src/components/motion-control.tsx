@@ -25,7 +25,7 @@ function select(paused: boolean) {
   try { localStorage.setItem(key, sessionChoice); sessionOverride = false; } catch { /* Keep the session override when writes fail. */ }
   window.dispatchEvent(new Event(changed));
 }
-/** The device supplies the default; an explicit choice affects only the SVG field. */
+/** The device supplies the default; an explicit choice affects only mouse effects. */
 export function useMotionControl(): readonly [boolean, (paused: boolean) => void, boolean] {
   const choice = useSyncExternalStore(subscribe, snapshot, () => null);
   const reduced = useMotionPreference();
@@ -33,6 +33,6 @@ export function useMotionControl(): readonly [boolean, (paused: boolean) => void
 }
 export function MotionToggle() {
   const [paused, setPaused] = useMotionControl();
-  const label = paused ? "Animasyonları aç" : "Animasyonları kapat";
+  const label = paused ? "Enable mouse effects" : "Disable mouse effects";
   return <button type="button" className="motion-toggle background-toggle" onClick={() => setPaused(!paused)} aria-pressed={!paused} aria-label={label} title={label}>{paused ? <MouseOff size={20} aria-hidden="true" /> : <Mouse size={20} aria-hidden="true" />}</button>;
 }

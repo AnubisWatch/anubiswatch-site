@@ -228,7 +228,7 @@ test("tap bursts are capped and expire, while controls, text selection, drags an
   await expect(svg).toHaveAttribute("data-ripples", "0");
 });
 
-test("hidden and occluded vectors stop updating, pause persists into docs, and reduced motion is static", async ({ page, context }) => {
+test("hidden and occluded vectors stop updating, mouse preference persists into docs, and reduced motion is static", async ({ page, context }) => {
   test.setTimeout(60_000);
   await animate(page);
   const svg = field(page), writes = () => page.evaluate(() => window.fieldWrites);
@@ -237,15 +237,15 @@ test("hidden and occluded vectors stop updating, pause persists into docs, and r
   expect(await invisible.count()).toBe(1);
   const transform = await invisible.getAttribute("transform"); await page.clock.runFor(200);
   expect(await invisible.getAttribute("transform")).toBe(transform);
-  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
-  await expect(svg).toHaveAttribute("data-state", "paused"); await page.clock.runFor(100);
+  await page.getByRole("button", { name: "Disable mouse effects", exact: true }).click();
+  await expect(svg).toHaveAttribute("data-state", "ambient"); await page.clock.runFor(100);
   await expect(page.locator("svg.site-interaction-layer")).toBeHidden();
-  const paused = await writes(); await page.clock.runFor(1000); expect(await writes()).toBe(paused);
+  const ambient = await writes(); await page.clock.runFor(1000); expect(await writes()).toBeGreaterThan(ambient);
   const docs = await context.newPage();
   await docs.emulateMedia({ reducedMotion: "no-preference" });
   await docs.goto("/docs/installation/");
-  await expect(field(docs)).toHaveAttribute("data-state", "paused");
-  await docs.getByRole("button", { name: "Animasyonları aç", exact: true }).click();
+  await expect(field(docs)).toHaveAttribute("data-state", "ambient");
+  await docs.getByRole("button", { name: "Enable mouse effects", exact: true }).click();
   await expect(svg).toHaveAttribute("data-state", /running|idle/);
   await docs.close(); await page.bringToFront(); await page.clock.runFor(250);
   await page.mouse.click(8, 200); await page.clock.runFor(100);
@@ -261,6 +261,6 @@ test("hidden and occluded vectors stop updating, pause persists into docs, and r
   await page.emulateMedia({ reducedMotion: "no-preference" }); await page.clock.runFor(300); expect(await writes()).toBeGreaterThan(reduced);
   // A quota/read-only failure must not undo the user's current-session choice.
   await page.evaluate(() => { Storage.prototype.setItem = () => { throw new Error("Read-only storage"); }; });
-  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
-  await expect(svg).toHaveAttribute("data-state", "paused");
+  await page.getByRole("button", { name: "Disable mouse effects", exact: true }).click();
+  await expect(svg).toHaveAttribute("data-state", "ambient");
 });

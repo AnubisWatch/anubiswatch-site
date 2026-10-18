@@ -119,13 +119,13 @@ test("background control stays scoped while illustrated artwork follows visibili
   const beam = page.locator(".balance-beam");
   await expect(sweep).toHaveCSS("animation-play-state", "running");
   await expect(beam).toHaveCSS("animation-play-state", "paused");
-  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
-  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "paused");
+  await page.getByRole("button", { name: "Disable mouse effects", exact: true }).click();
+  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "ambient");
   await expect(sweep).toHaveCSS("animation-play-state", "running");
   await page.reload();
-  await expect(page.getByRole("button", { name: "Animasyonları aç", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Enable mouse effects", exact: true })).toHaveAttribute("aria-pressed", "false");
   await expect(sweep).toHaveCSS("animation-play-state", "running");
-  await page.getByRole("button", { name: "Animasyonları aç", exact: true }).click();
+  await page.getByRole("button", { name: "Enable mouse effects", exact: true }).click();
   await expect(sweep).toHaveCSS("animation-play-state", "running");
   await page.evaluate(() => {
     Object.defineProperty(document, "hidden", { configurable: true, value: true });
@@ -143,7 +143,7 @@ test("background control stays scoped while illustrated artwork follows visibili
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(beam).toHaveCSS("animation-name", "none");
   await page.evaluate(() => { localStorage.removeItem("anubiswatch-background-motion"); window.dispatchEvent(new StorageEvent("storage", { key: "anubiswatch-background-motion" })); });
-  await expect(page.getByRole("button", { name: "Animasyonları aç" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Enable mouse effects" })).toBeEnabled();
   await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "reduced");
 });
 
@@ -156,10 +156,10 @@ test("motion controls still work when browser storage is unavailable", async ({ 
     Storage.prototype.setItem = () => { throw new Error("Storage unavailable"); };
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Animasyonları kapat", exact: true }).click();
-  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "paused");
+  await page.getByRole("button", { name: "Disable mouse effects", exact: true }).click();
+  await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", "ambient");
   await expect(page.locator(".celestial-sweep")).toHaveCSS("animation-play-state", "running");
-  await page.getByRole("button", { name: "Animasyonları aç", exact: true }).click();
+  await page.getByRole("button", { name: "Enable mouse effects", exact: true }).click();
   await expect(page.locator("svg.site-atmosphere")).toHaveAttribute("data-state", /running|idle/);
   await expect(page.locator(".celestial-sweep")).toHaveCSS("animation-play-state", "running");
   expect(errors).toEqual([]);
