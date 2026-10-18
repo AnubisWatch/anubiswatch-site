@@ -96,6 +96,8 @@ test("appearance menu supports keyboard choices, dismissal and responsive previe
 });
 
 test("studio attribution and both themes remain readable and responsive", async ({ page }, testInfo) => {
+  // Two themes, a viewport matrix and two accessibility scans share this budget.
+  test.setTimeout(60_000);
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
   const studio = page.getByRole("region", { name: "The studio behind AnubisWatch" });
@@ -105,6 +107,8 @@ test("studio attribution and both themes remain readable and responsive", async 
     if (theme === "light") await chooseTheme(page, "Light");
     for (const width of testInfo.project.name === "desktop" ? [3840, 1920, 1440, 1024, 768] : [412, 390, 320]) {
       await page.setViewportSize({ width, height: width === 3840 ? 2160 : 1000 });
+      await page.evaluate(() => document.fonts.ready);
+      await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const control = await page.getByRole("button", { name: /Color theme:/ }).boundingBox();
       expect(control!.x + control!.width).toBeLessThanOrEqual(width);
@@ -133,6 +137,7 @@ test("documentation code, search and studio adapt to the light theme", async ({ 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   for (const width of testInfo.project.name === "desktop" ? [1440, 1024, 768] : [390, 320]) {
     await page.setViewportSize({ width, height: 1000 });
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     const clipped = await page.locator(".docs-header a, .docs-header button").evaluateAll((controls) => controls.filter((control) => {
       const rectangle = control.getBoundingClientRect();
       return rectangle.width > 0 && (rectangle.left < 0 || rectangle.right > innerWidth);

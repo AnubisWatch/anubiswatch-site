@@ -117,35 +117,41 @@ to the public PNG on `raw.githubusercontent.com` so crawler image downloads
 use a valid HTTPS connection. Once the domain certificate is ready, the shared
 image URL in `src/lib/social-image.ts` can use the site's own HTTPS URL.
 
-## Hero atmosphere
+## Site-wide SVG atmosphere
 
-`HeroAtmosphere` adds a full-viewport Canvas 2D field around the existing SVG
-guardian, while hero content retains the shared layout. Ma'at feathers, scales,
-probe heartbeats and orbital signal routes form the scene. A soft mask lowers
-detail behind the copy and the transparent logo, and fades objects and waves at
-every edge.
+`SiteAtmosphere` is mounted once in the root layout, behind both the marketing
+site and all documentation pages. It replaces the previous hero-only Canvas.
+Native SVG symbols, paths and circles form Ma'at feathers, scales, pyramids and
+heartbeat probes. Three continuous signal routes and depth-dependent scroll
+parallax keep the field coherent through every section and the footer.
 
-Passive pointer listeners apply a local, distance-weighted influence. Background
-taps produce three related verdict-wave patterns and short-lived signal sparks;
-nearby rapid taps merge, with at most six waves and 64 sparks (three and 24 on
-mobile). Text and controls are excluded. Drags, touch cancellation and native
-scrolling do not trigger waves; the canvas never takes pointer or keyboard focus.
+The SVG stays the size of the viewport instead of growing with the document.
+A fixed pool of at most 112 units (28 on mobile) wraps outside the visible edges;
+hidden or occluded units receive no transform/opacity updates. Text, headers,
+panels and the transparent logo have soft quiet zones. Normal content rectangles
+are cached in document coordinates; sticky elements are measured when scrolling.
+Colors inherit the shared gold/green theme variables, with lower light-mode
+opacity. No Canvas, raster backing store, animation library or dependency is added.
 
-All density, lifetime, radius, frame-rate, pixel-budget and palette settings live
-in `src/lib/hero-atmosphere.ts`. No dependencies are added. The field uses seeded
-positions, elapsed-time movement and no React state updates per frame. It lowers
-activity when idle and stops its requestAnimationFrame loop when manually paused,
-outside the viewport or in a hidden tab. Resume resets the frame timestamp.
-Reduced motion renders a static composition without interaction bursts. Both
-theme palettes update through the existing appearance menu. ResizeObserver
-measures the actual hero, DPR is capped at 1.75 and the backing store at roughly
-4.5 million pixels; mobile uses 30 objects and fewer connections. Every listener,
-observer and scheduled frame is cleaned up on unmount.
+Passive document listeners apply local distance-weighted influence. Taps produce
+three related verdict waves and short-lived sparks, capped at six waves and 54
+sparks (three and 18 on mobile). Nearby rapid taps merge. Controls, reading text,
+drags, cancelled touches and native scrolling never create background bursts.
+The decorative SVG cannot receive pointer or keyboard focus.
 
-Hero tests cover actual canvas drawing and suspension, effect limits and expiry,
-native mobile scrolling, control isolation, persisted pause, reduced motion,
-both themes and full-width rendering up to 3840px. The shared layout suite also
-checks 375, 768, 1024, 1440, 1920 and 2560px.
+Density, lifetimes, radii, parallax, quiet zones and frame rates are centralized in
+`src/lib/site-atmosphere.ts`. Elapsed-time motion runs outside React rendering.
+Idle activity drops; the loop stops when hidden, outside the viewport or paused,
+and resumes with a fresh timestamp. Reduced motion uses a static composition
+that redraws only for layout changes. Every observer, listener and frame is
+cleaned up on unmount. The shared motion store persists choices across routes
+and tabs, supports unavailable storage, and drives controls in both headers.
+
+Tests cover SVG symbol references, bounded pools, section/footer continuity,
+actual vector changes and suspension, invisible units, effect expiry, native
+mobile scrolling, control isolation, cross-page pause, reduced motion, both
+themes and widths up to 3840px. Shared layout tests additionally check 375, 768,
+1024, 1440, 1920 and 2560px.
 
 ## Embedded documentation
 

@@ -10,6 +10,8 @@ test("page renders without runtime errors, stays within the viewport and is acce
   await expect(page.getByRole("link", { name: "Summon your guardian", exact: true })).toHaveAttribute("href", "#get-started");
   for (const width of testInfo.project.name === "desktop" ? [3840, 2560, 1920, 1440, 1024, 768] : [412, 390, 320]) {
     await page.setViewportSize({ width, height: width >= 3840 ? 2160 : 1000 });
+    await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     if (width === 3840) {
       const readability = await page.evaluate(() => {

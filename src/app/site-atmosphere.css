@@ -1,0 +1,15 @@
+.site-atmosphere { --field-opacity: .9; position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: hidden; background: radial-gradient(ellipse at 80% 30%, color-mix(in oklch, var(--gold) 4%, transparent), transparent 60%); }
+.site-atmosphere :is(path, circle) { vector-effect: non-scaling-stroke; stroke-opacity: var(--field-opacity); }
+.field-glyph, .field-routes, .field-wires, .field-waves { stroke: var(--gold); stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; }
+.field-soul, .field-trails, .field-sparks { stroke: var(--green); stroke-width: 1; stroke-linecap: round; }
+.field-signal { fill: var(--green); fill-opacity: var(--field-opacity); }
+.field-wires { stroke-width: .7; }
+.field-routes { stroke-width: .8; }
+.field-wave-inner { stroke: var(--green); opacity: .5; }
+.field-waves [data-variant="1"] { stroke: var(--green); }
+[data-theme="light"] .site-atmosphere { --field-opacity: .72; }
+.hero-stage { position: relative; isolation: isolate; }
+.hero-stage .guardian { z-index: 1; }
+.hero-stage .hero::before { display: none; }
+.docs-site[data-motion-paused="true"] *, .docs-site[data-motion-paused="true"] *::before, .docs-site[data-motion-paused="true"] *::after { animation-play-state: paused !important; }
+@media print { .site-atmosphere { display: none; } }
