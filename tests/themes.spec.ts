@@ -101,8 +101,13 @@ test("studio attribution and both themes remain readable and responsive", async 
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
   const studio = page.getByRole("region", { name: "The studio behind AnubisWatch" });
-  await expect(studio.getByRole("link", { name: "Visit OXOGNET" })).toHaveAttribute("href", "https://oxog.net");
-  await expect(studio.getByRole("navigation", { name: "More from OXOGNET" }).getByRole("link")).toHaveCount(4);
+  await expect(studio.getByRole("link", { name: "Meet oxog.net", exact: true })).toHaveAttribute("href", "https://oxog.net");
+  await expect(studio.getByRole("link")).toHaveCount(1);
+  await expect(studio.getByRole("heading", { level: 2 })).toHaveText("Small studio. Big ideas.");
+  await expect(studio).toContainText("PART OF A BIGGER PICTURE");
+  await expect(studio).toContainText("Explore the tools and infrastructure from Oxog.");
+  await expect(studio.getByRole("navigation")).toHaveCount(0);
+  await expect(studio.locator(".oxog-projects, .oxog-wordmark, .oxog-origin")).toHaveCount(0);
   for (const theme of ["dark", "light"] as const) {
     if (theme === "light") await chooseTheme(page, "Light");
     for (const width of testInfo.project.name === "desktop" ? [3840, 1920, 1440, 1024, 768] : [412, 390, 320]) {
@@ -118,7 +123,7 @@ test("studio attribution and both themes remain readable and responsive", async 
       }).map((control) => control.getAttribute("aria-label") ?? control.textContent));
       expect(clippedControls, "header controls at " + width).toEqual([]);
       const symbol = await studio.locator("svg.oxog-mark").boundingBox();
-      expect(symbol!.width).toBeGreaterThanOrEqual(100);
+      expect(symbol!.width).toBe(width <= 520 ? 65 : 105);
     }
     await page.setViewportSize({ width: testInfo.project.name === "desktop" ? 1440 : 390, height: 1000 });
     await page.evaluate(() => window.scrollTo(0, 0));

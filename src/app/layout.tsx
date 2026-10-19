@@ -7,6 +7,7 @@ import "./svg-motion.css";
 import "./readability.css";
 import "./themes.css";
 import "./layout.css";
+import "./oxog-studio.css";
 import "./site-atmosphere.css";
 import { SiteAtmosphere } from "@/components/site-atmosphere";
 import { ThemeProvider } from "@/components/theme-provider";

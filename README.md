@@ -211,8 +211,12 @@ and syntax highlighting. A pre-paint script applies the saved preference or devi
 theme; choices persist locally and synchronize across tabs. Storage failures do
 not prevent switching within the current session.
 
-The OXOGNET studio section appears below the site and documentation, with a native
-SVG signature animation and the four project links shown on ninedeploy.com.
-Its animation follows reduced-motion and the homepage motion control.
+The OXOG studio signature below the site and documentation matches the footer on
+mammothengine.com: the same four-path SVG, six-second repeating draw animation,
+Space Grotesk heading, copy and single oxog.net link. No project list is included.
+The scoped styles preserve the reference's layout and two palettes. The bundled
+heading font includes its SIL Open Font License in `public/fonts/`.
+Its animation pauses offscreen or in a hidden tab, respects reduced motion and
+continues independently of the mouse-effects switch.
 Theme tests cover both palettes, accessibility, responsive header controls,
 cross-tab preference updates and unavailable browser storage.
