@@ -120,10 +120,13 @@ test("both headers keep the adjacent mouse button touchable at narrow and wide w
       if (info.project.name === "desktop" && width === 1440) await page.screenshot({ path: `artifacts/mouse-toggle-${route === "/" ? "home" : "docs"}.png` });
     }
     await page.setViewportSize({ width: 375, height: 1000 });
-    const button = page.locator("header .background-toggle"), box = await button.boundingBox();
+    const button = page.locator("header .background-toggle");
     if (info.project.name === "mobile") {
+      // Wait for the resized header before reading state or dispatching a touch.
+      // A raw cached bounding box can still describe the previous viewport.
+      await button.scrollIntoViewIfNeeded();
       const before = await button.getAttribute("aria-pressed");
-      await page.touchscreen.tap(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      await button.tap();
       await expect(button).toHaveAttribute("aria-pressed", before === "true" ? "false" : "true");
     }
   }
