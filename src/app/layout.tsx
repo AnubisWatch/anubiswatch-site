@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/manrope";
-import "@fontsource/cormorant-garamond/500-italic.css";
-import "@fontsource/ibm-plex-mono/400.css";
+import type { CSSProperties } from "react";
+import { codeThemeVariables } from "@/lib/syntax-colors";
+import { spaceGrotesk, jetBrainsMono } from "./fonts";
 import "./globals.css";
 import "./svg-motion.css";
 import "./readability.css";
@@ -9,6 +9,7 @@ import "./themes.css";
 import "./layout.css";
 import "./oxog-studio.css";
 import "./site-atmosphere.css";
+import "./quality.css";
 import { SiteAtmosphere } from "@/components/site-atmosphere";
 import { ThemeProvider } from "@/components/theme-provider";
 import { socialImage, socialTwitter } from "@/lib/social-image";
@@ -26,5 +27,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#0b0d0c", colorScheme: "dark light" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" data-theme="dark" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: '(function(){var t;try{t=localStorage.getItem("anubiswatch-theme")}catch(e){}if(t!=="dark"&&t!=="light")t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var m=document.querySelector(\'meta[name="theme-color"]\');if(m)m.content=t==="light"?"#faf8f1":"#0b0d0c"})()' }} /></head><body><ThemeProvider><SiteAtmosphere />{children}</ThemeProvider></body></html>;
+  return <html lang="en" data-theme="dark" className={`${spaceGrotesk.variable} ${jetBrainsMono.variable}`} style={codeThemeVariables as CSSProperties} suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: '(function(){var t;try{t=localStorage.getItem("anubiswatch-theme")}catch(e){}if(t!=="dark"&&t!=="light")t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var m=document.querySelector(\'meta[name="theme-color"]\');if(m)m.content=t==="light"?"#faf8f1":"#0b0d0c"})()' }} /></head><body><ThemeProvider><SiteAtmosphere />{children}</ThemeProvider></body></html>;
 }

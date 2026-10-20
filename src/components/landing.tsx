@@ -7,6 +7,7 @@ import { DocsHub } from "@/components/docs-hub";
 import { OxogStudio } from "@/components/oxog-studio";
 import { ThemeToggle } from "@/components/theme-provider";
 import { MotionToggle } from "@/components/motion-control";
+import { useNavigationMenu } from "@/components/use-navigation-menu";
 import { Activity, ArrowDown, ArrowRight, ArrowUpRight, Bell, Check, CheckCheck, ChevronDown, Code2, Copy, Crown, Feather, Gavel, Globe2, HeartPulse, Layers3, Mail, Menu, Network, Radio, Scale, ScrollText, Server, ShieldCheck, Terminal, TriangleAlert, X, Zap, type LucideIcon } from "lucide-react";
 import { BinaryCore, CelestialField, ClusterGlobe, DataRail, DispatchSignal, JudgmentScales, ProtocolSignal, WingedDisc } from "@/components/animated-art";
 import { channels, DOCS, installCommands, protocols, questions, RELEASES, REPO, steps } from "@/lib/content";
@@ -140,6 +141,7 @@ function Install() {
 
 export function Landing() {
   const [menu, setMenu] = useState(false);
+  useNavigationMenu(menu, setMenu, "mobile-nav", "(min-width: 701px)");
   const [protocol, setProtocol] = useState(0);
   const [step, setStep] = useState(0);
   const [scrolled, setScrolled] = useState(false);
@@ -167,12 +169,6 @@ export function Landing() {
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
   }, []);
-  useEffect(() => {
-    if (!menu) return;
-    const key = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") { setMenu(false); document.getElementById("menu-toggle")?.focus(); } };
-    document.addEventListener("keydown", key);
-    return () => document.removeEventListener("keydown", key);
-  }, [menu]);
   return <MotionConfig reducedMotion={reduced ? "always" : "never"}><div id="top" className={reduced ? "site reduce-motion" : "site"}>
     <a href="#main" className="skip-link">Skip to content</a>
     <header className={"site-header " + (scrolled ? "scrolled" : "")}><div className="header-inner"><Brand /><span className="header-caption">THE GUARDIAN OF UPTIME</span><nav className="desktop-nav" aria-label="Main navigation"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><a href={DOCS + "/"}>Docs <ArrowUpRight size={12} /></a></nav><MotionToggle /><ThemeToggle /><a className="header-github" href={REPO}><Github size={16} /><span>GitHub</span><ArrowUpRight size={13} /></a><a className="button button-small header-start" href="#get-started">Get started <ArrowRight size={14} /></a><button id="menu-toggle" className="menu-toggle" aria-expanded={menu} aria-controls="mobile-nav" aria-label={menu ? "Close navigation" : "Open navigation"} onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button></div>{menu && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"><a onClick={() => setMenu(false)} href="#platform">Platform</a><a onClick={() => setMenu(false)} href="#how-it-works">How it works</a><a href={DOCS + "/"}>Documentation <ArrowUpRight size={16} /></a><a href="#get-started" onClick={() => setMenu(false)}>Get started <ArrowRight size={16} /></a></nav>}</header>

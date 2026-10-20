@@ -9,10 +9,12 @@ import { DocsSearch } from "./docs-search";
 import { OxogStudio } from "./oxog-studio";
 import { ThemeToggle } from "./theme-provider";
 import { MotionToggle } from "./motion-control";
+import { useNavigationMenu } from "./use-navigation-menu";
 
 export function DocsShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  useNavigationMenu(mobileOpen, setMobileOpen, "docs-mobile-menu", "(min-width: 901px)");
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   function navigation(mobile = false) {
     return <nav aria-label={mobile ? "Mobile documentation" : "Documentation sidebar"}>{docGroups.map((group) => <div className="docs-nav-group" key={group}><h2>{group}</h2>{docCatalog.filter((doc) => doc.group === group).map((doc) => <a key={doc.slug} href={docHref(doc.slug)} aria-current={pathname.replace(/\/$/, "") === docHref(doc.slug).replace(/\/$/, "") ? "page" : undefined} onClick={() => setMobileOpen(false)}>{doc.title}</a>)}</div>)}</nav>;

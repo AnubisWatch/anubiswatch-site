@@ -69,12 +69,15 @@ export function DocsSearch() {
     .slice(0, 8);
 
   function navigate(href: string) { setOpen(false); window.location.assign(href); }
+  useEffect(() => {
+    if (open && !loading && !error) dialog.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+  }, [open, active, query, loading, error]);
   return <>
     <button className="docs-search-trigger" onClick={() => setOpen(true)} aria-label="Search documentation"><Search size={18} /><span>Search documentation</span><kbd>Ctrl K</kbd></button>
     <dialog ref={dialog} className="docs-search-dialog" aria-labelledby="docs-search-title" onClose={() => setOpen(false)} onCancel={() => setOpen(false)} onClick={(event) => { if (event.target === dialog.current) setOpen(false); }}>
       <div className="docs-search-content">
         <div className="docs-search-heading"><h2 id="docs-search-title">Search the hall</h2><button aria-label="Close search" onClick={() => setOpen(false)}><X size={20} /></button></div>
-        <div className="docs-search-input"><Search size={20} /><input ref={input} role="combobox" aria-label="Search documentation" aria-autocomplete="list" aria-expanded={open} aria-controls="docs-search-results" aria-activedescendant={results[active] ? "docs-result-" + active : undefined} value={query} placeholder="Try “TLS”, “cluster secret” or “MCP”…" onChange={(event) => { setQuery(event.target.value); setActive(0); }} onKeyDown={(event) => {
+        <div className="docs-search-input"><Search size={20} /><label htmlFor="docs-search-query" className="sr-only">Search documentation</label><input id="docs-search-query" ref={input} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls="docs-search-results" aria-activedescendant={results[active] ? "docs-result-" + active : undefined} value={query} placeholder="Try “TLS”, “cluster secret” or “MCP”…" onChange={(event) => { setQuery(event.target.value); setActive(0); }} onKeyDown={(event) => {
           if (event.key === "ArrowDown" && results.length) { event.preventDefault(); setActive((index) => (index + 1) % results.length); }
           if (event.key === "ArrowUp" && results.length) { event.preventDefault(); setActive((index) => (index - 1 + results.length) % results.length); }
           if (event.key === "Enter" && results[active]) { event.preventDefault(); navigate(results[active].href); }

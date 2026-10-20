@@ -3,7 +3,7 @@
   --header-bg: oklch(0.155 0.008 155 / .96);
   --button-ink: #14170e;
   --subtle: #ffffff03;
-  --code-bg: #090d0b;
+  --code-bg: var(--code-surface-dark);
   --code-text: #c9d1d9;
 }
 [data-theme="light"] {
@@ -21,7 +21,7 @@
   --header-bg: oklch(0.976 0.012 90 / .96);
   --button-ink: oklch(0.995 0.004 90);
   --subtle: oklch(0.30 0.025 90 / .025);
-  --code-bg: oklch(0.96 0.008 90);
+  --code-bg: var(--code-surface-light);
   --code-text: oklch(0.245 0.018 155);
 }
 .site-header.scrolled, [data-theme] .docs-header { background: var(--header-bg); }
@@ -80,6 +80,7 @@
 .theme-panel-status { display: flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .6875rem; border-top: 1px solid var(--line); margin-top: 1.125rem; padding-top: .875rem; }
 .theme-panel-status svg { width: .875rem; height: .875rem; }
 @keyframes theme-panel-in { from { opacity: 0; transform: translateY(-.3rem) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.theme-panel { max-height: calc(100dvh - 6rem); overflow-y: auto; overscroll-behavior: contain; }
 .docs-studio-wrap { margin-top: 1rem; }
 @media (max-width: 1100px) { .header-start { display: none; } }
 @media (max-width: 960px) { .header-github { display: none; } }

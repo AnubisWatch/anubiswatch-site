@@ -13,9 +13,6 @@
     "predev": "node scripts/build-docs-index.mjs"
   },
   "dependencies": {
-    "@fontsource-variable/manrope": "latest",
-    "@fontsource/cormorant-garamond": "latest",
-    "@fontsource/ibm-plex-mono": "latest",
     "hast-util-to-string": "^3.0.1",
     "lucide-react": "1.59.0",
     "motion": "14.3.0",

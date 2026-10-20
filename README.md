@@ -203,6 +203,13 @@ clipboard paths, in-page anchors, mobile navigation and accessibility.
 
 ## Themes and studio
 
+Space Grotesk is the shared UI typeface and JetBrains Mono is used for code and
+technical values. `src/app/fonts.ts` configures self-hosted variable fonts through
+`next/font/local`; styles use the `--font-space-grotesk` and `--font-jetbrains`
+tokens rather than generated class names. Normal and italic code faces include
+Turkish glyphs. Font licenses are in `public/fonts/`. Quicksand is a reserved
+token and is not downloaded or applied without a defined accent use.
+
 The header Appearance menu has Light, Dark and System preview cards, like the
 theme picker on cobaltdb.dev. System follows device changes; explicit choices
 select the original dark palette or a light papyrus palette with contrasting gold
@@ -218,5 +225,8 @@ The scoped styles preserve the reference's layout and two palettes. The bundled
 heading font includes its SIL Open Font License in `public/fonts/`.
 Its animation pauses offscreen or in a hidden tab, respects reduced motion and
 continues independently of the mouse-effects switch.
-Theme tests cover both palettes, accessibility, responsive header controls,
+Theme and design-quality tests cover both palettes, accessibility, responsive header controls,
 cross-tab preference updates and unavailable browser storage.
+Navigation disclosures support Escape, focus entry/return, outside dismissal and
+closing when their desktop breakpoint is reached. Search keeps its input visible
+while keyboard selection scrolls the result list, including short landscape views.

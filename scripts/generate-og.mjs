@@ -7,16 +7,14 @@ import { chromium } from "@playwright/test";
 // Regenerate with `npm run generate:og` after installing Playwright Chromium.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const data = async (file, type) => `data:${type};base64,${(await fs.readFile(path.join(root, file))).toString("base64")}`;
-const manrope = await data("node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2", "font/woff2");
-const cormorant = await data("node_modules/@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-italic.woff2", "font/woff2");
+const spaceGrotesk = await data("src/app/fonts/space-grotesk.woff2", "font/woff2");
 const logo = (await fs.readFile(path.join(root, "public/images/anubis-logo.svg"), "utf8"))
   .replace('width="400" height="400" viewBox="0 0 400 400"', 'width="330" height="344" viewBox="60 52 280 292"');
 const ticks = Array.from({ length: 60 }, (_, i) => `<path d="M 0 -212 v ${i % 5 === 0 ? 12 : 5}" transform="rotate(${i * 6})"/>`).join("");
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
-@font-face{font-family:Manrope;src:url('${manrope}') format('woff2');font-weight:200 800;font-display:block}
-@font-face{font-family:Cormorant;src:url('${cormorant}') format('woff2');font-weight:500;font-style:italic;font-display:block}
+@font-face{font-family:SpaceGrotesk;src:url('${spaceGrotesk}') format('woff2');font-weight:300 700;font-display:block}
 *{box-sizing:border-box}html,body{margin:0;width:1200px;height:630px;overflow:hidden}
-body{font-family:Manrope,sans-serif;color:#f3f1e8;background:#0b100e}
+body{font-family:SpaceGrotesk,sans-serif;color:#f3f1e8;background:#0b100e}
 .card{position:relative;width:1200px;height:630px;isolation:isolate;background:radial-gradient(ellipse at 80% 34%,#a98c3926,transparent 46%),radial-gradient(ellipse at 58% 100%,#2cac6d18,transparent 58%),linear-gradient(115deg,#101713,#090d0b)}
 .frame{position:absolute;inset:22px;border:1px solid #dcc47730;border-radius:18px}
 .corner{position:absolute;inset:22px;z-index:-1}
@@ -26,7 +24,7 @@ body{font-family:Manrope,sans-serif;color:#f3f1e8;background:#0b100e}
 .status:before{content:'';width:7px;height:7px;background:#5bd391;border-radius:50%;box-shadow:0 0 16px #59d18c80}
 .copy{position:absolute;left:64px;top:156px;width:688px}
 h1{margin:0;font-size:65px;line-height:1.13;font-weight:800;letter-spacing:-3px}
-h1 em{display:block;font-family:Cormorant,serif;font-size:96px;font-weight:500;letter-spacing:-3.4px;color:#edce7e;line-height:1.04;margin-top:2px}
+h1 em{display:block;font-size:80px;font-weight:500;letter-spacing:-3.4px;color:#edce7e;line-height:1.04;margin-top:2px}
 .description{margin:26px 0 0;color:#c0c9c1;font-size:25px;font-weight:500;line-height:1.55;letter-spacing:-.4px}
 .description strong{color:#f0f2e9;font-weight:650}
 .guardian{position:absolute;left:720px;top:121px;width:428px;height:428px}
