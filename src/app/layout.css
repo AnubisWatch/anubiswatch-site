@@ -10,7 +10,7 @@
   --prose-measure: min(68ch, 760px);
 }
 html { font-size: clamp(16px, calc(10px + .416667vw), 22px); }
-.site :is(.section-shell, .header-inner), .docs-site .docs-container {
+.site :is(.section-shell, .header-inner), .docs-site .docs-container, .not-found.section-shell {
   width: var(--layout-width);
   max-width: var(--layout-max);
   margin-inline: auto;

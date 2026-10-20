@@ -119,3 +119,15 @@ test("documentation checklists expose their visible text as native checkbox labe
   await expect(page.getByRole("checkbox", { name: "Enable TLS for all communications", exact: true })).toBeDisabled();
   expect(await checkboxes.evaluateAll(inputs => inputs.every(input => (input as HTMLInputElement).labels?.[0]?.textContent?.trim()))).toBe(true);
 });
+
+test("the error page keeps the shared gutters, readable measure and working recovery link", async ({ page }) => {
+  for (const width of [320, 768, 1440, 2560]) {
+    await page.setViewportSize({ width, height: 667 });
+    const response = await page.goto("/missing-design-audit-page/"); expect(response!.status()).toBe(404);
+    const box = await page.locator("main").boundingBox(); expect(box!.x).toBeGreaterThanOrEqual(width <= 370 ? 16 : 20);
+    expect(box!.width).toBeLessThanOrEqual(1728); expect(box!.x + box!.width).toBeLessThan(width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByRole("link", { name: /Return to the hall/ }).focus(); await expect(page.getByRole("link", { name: /Return to the hall/ })).toBeFocused();
+  }
+  await page.getByRole("link", { name: /Return to the hall/ }).click(); await expect(page).toHaveURL(/\/$/);
+});
