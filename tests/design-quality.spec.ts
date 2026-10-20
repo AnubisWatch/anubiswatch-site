@@ -131,3 +131,19 @@ test("the error page keeps the shared gutters, readable measure and working reco
   }
   await page.getByRole("link", { name: /Return to the hall/ }).click(); await expect(page).toHaveURL(/\/$/);
 });
+
+test("content and the complete SVG studio mark survive disabled JavaScript", async ({ browser }) => {
+  for (const reducedMotion of ["reduce", "no-preference"] as const) {
+    const context = await browser.newContext({ javaScriptEnabled: false, reducedMotion, viewport: { width: 375, height: 812 } });
+    const page = await context.newPage();
+    for (const route of ["/", "/docs/installation/"]) {
+      await page.goto(route); await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      const mark = page.locator(".oxog-mark"); await mark.scrollIntoViewIfNeeded(); await expect(mark).toBeVisible();
+      for (const path of await mark.locator("path").all()) {
+        await expect(path).toHaveCSS("stroke-dashoffset", "0px"); await expect(path).toHaveCSS("animation-name", "none");
+      }
+      await expect(page.getByRole("link", { name: "Meet oxog.net", exact: true })).toHaveAttribute("href", "https://oxog.net");
+    }
+    await context.close();
+  }
+});

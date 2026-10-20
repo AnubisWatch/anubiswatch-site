@@ -7,18 +7,20 @@ export function OxogStudio() {
   const ref = useRef<HTMLAnchorElement>(null);
   const [visible, setVisible] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [enhanced, setEnhanced] = useState(false);
   useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(([entry]) => {
       setVisible(entry.isIntersecting);
     });
     const visibility = () => setHidden(document.hidden);
     visibility();
     document.addEventListener("visibilitychange", visibility);
-    if (ref.current) observer.observe(ref.current);
+    if (ref.current) { observer.observe(ref.current); setEnhanced(true); }
     return () => { observer.disconnect(); document.removeEventListener("visibilitychange", visibility); };
   }, []);
   return <section id="studio" aria-label="The studio behind AnubisWatch">
-    <a ref={ref} href="https://oxog.net" className="oxog-studio" aria-label="Meet oxog.net" data-visible={visible} data-page-hidden={hidden}>
+    <a ref={ref} href="https://oxog.net" className="oxog-studio" aria-label="Meet oxog.net" data-visible={visible} data-page-hidden={hidden} data-enhanced={enhanced}>
       <svg className="oxog-mark" viewBox="0 0 200 130" fill="none" aria-hidden="true">
         <path d="M93 56 72 35C49 13 14 24 9 53 3 84 23 104 46 103" stroke="#ed0878" strokeWidth="12" />
         <path d="M146 25c24-7 45 10 47 34 3 26-16 46-39 44-14-1-24-11-41-27" stroke="#ed0878" strokeWidth="12" />

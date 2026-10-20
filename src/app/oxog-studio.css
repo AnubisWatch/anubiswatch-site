@@ -53,7 +53,8 @@
   .oxog-studio-link { font-size: 10px; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .oxog-studio .oxog-mark path { stroke-dasharray: 400; animation: oxog-draw 6s ease-in-out var(--draw-delay, 0s) infinite paused; }
+  .oxog-studio .oxog-mark path { animation-play-state: paused; }
+  .oxog-studio[data-enhanced="true"] .oxog-mark path { stroke-dasharray: 400; animation: oxog-draw 6s ease-in-out var(--draw-delay, 0s) infinite paused; }
   .oxog-studio .oxog-mark path:nth-child(2) { --draw-delay: .15s; }
   .oxog-studio .oxog-mark path:nth-child(3) { --draw-delay: .3s; }
   .oxog-studio .oxog-mark path:nth-child(4) { --draw-delay: .45s; }
